@@ -6,6 +6,8 @@ import requests
 from PySide6.QtCore import QObject, Slot
 from typing_extensions import Optional
 
+from music import download_song_to_tmp
+
 
 @dataclass
 class Recording:
@@ -17,6 +19,7 @@ class Recording:
     release_id: str
     release_group_id: str
     release_date: str
+    score: int
 
 
 @dataclass
@@ -26,6 +29,7 @@ class Release:
     artist: str
     date: str
     release_id: str
+    score: int
 
 
 def parse_recording(data: dict) -> Recording:
@@ -43,18 +47,27 @@ def parse_recording(data: dict) -> Recording:
         release_group_id=release.get("release-group", {}).get("id", ""),
         duration_ms=data.get("length") or 0,
         release_date=data.get("first-release-date", ""),
+        score=int(data.get("score") or 0),
     )
 
 
 def search_recordings(query: str) -> list[Recording]:
     response = requests.get(
         "https://musicbrainz.org/ws/2/recording",
-        params={"query": query, "fmt": "json"},
+        params={"query": query, "fmt": "json", "limit": 50},
         headers={"User-Agent": "yamp/0.1 (Simon-Weij/yamp)"},
     )
     response.raise_for_status()
     data = response.json()
-    return [parse_recording(r) for r in data["recordings"]]
+    return sorted(
+        (parse_recording(r) for r in data["recordings"]),
+        key=lambda recording: (
+            recording.score,
+            recording.release_date,
+            recording.title,
+        ),
+        reverse=True,
+    )
 
 
 def parse_release(data: dict) -> Release:
@@ -68,18 +81,23 @@ def parse_release(data: dict) -> Release:
         artist=artist,
         date=data.get("date", ""),
         release_id=data["id"],
+        score=int(data.get("score") or 0),
     )
 
 
 def search_releases(query: str) -> list[Release]:
     response = requests.get(
         "https://musicbrainz.org/ws/2/release",
-        params={"query": query, "fmt": "json"},
+        params={"query": query, "fmt": "json", "limit": 50},
         headers={"User-Agent": "yamp/0.1 (Simon-Weij/yamp)"},
     )
     response.raise_for_status()
     data = response.json()
-    return [parse_release(r) for r in data["releases"]]
+    return sorted(
+        (parse_release(r) for r in data["releases"]),
+        key=lambda release: (release.score, release.date, release.title),
+        reverse=True,
+    )
 
 
 def serialize_song(recording: Recording) -> dict:
@@ -91,6 +109,7 @@ def serialize_song(recording: Recording) -> dict:
         "date": recording.release_date,
         "release_id": recording.release_id,
         "duration_ms": recording.duration_ms,
+        "score": recording.score,
     }
 
 
@@ -101,22 +120,8 @@ def serialize_album(release: Release) -> dict:
         "album": release.title,
         "date": release.date,
         "release_id": release.release_id,
+        "score": release.score,
     }
-
-
-def dedupe_results_by_artist(results: list[dict]) -> list[dict]:
-    seen_artists = set()
-    unique_results = []
-
-    for result in results:
-        artist = (result.get("artist") or "").strip().casefold()
-        if artist in seen_artists:
-            continue
-
-        seen_artists.add(artist)
-        unique_results.append(result)
-
-    return unique_results
 
 
 class Api(QObject):
@@ -126,10 +131,9 @@ class Api(QObject):
 
     @Slot(str, result=list)
     def searchAlbums(self, query: str):
-        return dedupe_results_by_artist(
-            [serialize_album(r) for r in search_releases(query)]
-        )
+        return [serialize_album(r) for r in search_releases(query)]
 
     @Slot("QVariant")
     def playSong(self, data):
+        download_song_to_tmp(data["artist"], data["title"])
         print(data)
