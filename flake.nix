@@ -6,6 +6,8 @@
         python313
         python313Packages.pyside6
         qt6.qtdeclarative
+        python313Packages.requests
+        python313Packages.typing-extensions
       ];
       devShell.env = pkgs: {
         LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [

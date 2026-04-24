@@ -5,13 +5,18 @@ from PySide6.QtCore import QFileSystemWatcher, QUrl
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 
+from musicbrainz import Api
+
 app = QGuiApplication(sys.argv)
 engine = QQmlApplicationEngine()
 engine.addImportPath("./ui")
 
+api = Api()
+
 
 def load():
     engine.clearComponentCache()
+    engine.rootContext().setContextProperty("api", api)
     [r.deleteLater() for r in engine.rootObjects()]
     engine.load(QUrl.fromLocalFile("./ui/main.qml"))
 
