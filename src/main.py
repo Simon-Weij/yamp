@@ -10,6 +10,7 @@ from musicbrainz import Api
 app = QGuiApplication(sys.argv)
 engine = QQmlApplicationEngine()
 engine.addImportPath("./ui")
+engine.addImportPath("ui/components")
 
 api = Api()
 
@@ -18,7 +19,7 @@ def load():
     engine.clearComponentCache()
     engine.rootContext().setContextProperty("api", api)
     [r.deleteLater() for r in engine.rootObjects()]
-    engine.load(QUrl.fromLocalFile("./ui/main.qml"))
+    engine.load(QUrl.fromLocalFile("./ui/Main.qml"))
 
 
 watcher = QFileSystemWatcher()
