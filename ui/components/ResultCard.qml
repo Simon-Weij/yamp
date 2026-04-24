@@ -1,17 +1,42 @@
 // qmllint disable unqualified
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Controls
 import ".."
 
 Rectangle {
-    required property var modelData
+    required property var itemData
+
+    function formatDuration(durationMs) {
+        const totalSeconds = Math.floor((durationMs || 0) / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        if (hours > 0)
+            return hours + ":" + String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+
+        return minutes + ":" + String(seconds).padStart(2, "0");
+    }
+
+    function playSong(data) {
+        console.log("recording_id:", data.recording_id || "<missing>");
+
+        for (const key in data)
+            console.log(key + ":", data[key]);
+    }
+
     width: ListView.view.width
     height: 120
     radius: 16
     color: Theme.backgroundSecondary
     border.color: Theme.foregroundSubtle
     border.width: 1
+
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton
+        onDoubleClicked: playSong(itemData)
+    }
 
     Row {
         anchors.fill: parent
@@ -57,9 +82,7 @@ Rectangle {
                 Image {
                     id: coverArt
                     anchors.fill: parent
-                    source: modelData.release_id
-                        ? "https://coverartarchive.org/release/" + modelData.release_id + "/front"
-                        : ""
+                    source: itemData.release_id ? "https://coverartarchive.org/release/" + itemData.release_id + "/front" : ""
                     asynchronous: true
                     cache: true
                     fillMode: Image.PreserveAspectCrop
@@ -75,7 +98,7 @@ Rectangle {
 
             Text {
                 width: parent.width
-                text: modelData.title || "Unknown result"
+                text: itemData.title || "Unknown result"
                 color: Theme.foreground
                 font.pixelSize: 20
                 font.bold: true
@@ -84,10 +107,26 @@ Rectangle {
 
             Text {
                 width: parent.width
-                text: modelData.artist || "Unknown artist"
+                text: itemData.album || "Unknown album"
                 color: Theme.foregroundSubtle
                 font.pixelSize: 14
                 elide: Text.ElideRight
+            }
+
+            Text {
+                width: parent.width
+                text: itemData.artist || "Unknown artist"
+                color: Theme.foregroundSubtle
+                font.pixelSize: 14
+                elide: Text.ElideRight
+            }
+
+            Text {
+                width: parent.width
+                text: formatDuration(itemData.duration_ms)
+                color: Theme.foregroundSubtle
+                font.pixelSize: 13
+                visible: (itemData.duration_ms || 0) > 0
             }
         }
     }

@@ -82,11 +82,13 @@ def search_releases(query: str) -> list[Release]:
 
 def serialize_song(recording: Recording) -> dict:
     return {
+        "recording_id": recording.id,
         "title": recording.title,
         "artist": recording.artist,
         "album": recording.album,
         "date": recording.release_date,
         "release_id": recording.release_id,
+        "duration_ms": recording.duration_ms,
     }
 
 

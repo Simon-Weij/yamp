@@ -52,6 +52,7 @@ ApplicationWindow {
 
         delegate: ResultCard {
             required property var modelData
+            itemData: modelData
         }
     }
 }
