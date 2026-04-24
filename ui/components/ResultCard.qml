@@ -19,10 +19,7 @@ Rectangle {
     }
 
     function playSong(data) {
-        console.log("recording_id:", data.recording_id || "<missing>");
-
-        for (const key in data)
-            console.log(key + ":", data[key]);
+        api.playSong(data);
     }
 
     width: ListView.view.width

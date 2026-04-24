@@ -1,3 +1,5 @@
+# pyright: reportArgumentType=false
+
 from dataclasses import dataclass
 
 import requests
@@ -127,3 +129,7 @@ class Api(QObject):
         return dedupe_results_by_artist(
             [serialize_album(r) for r in search_releases(query)]
         )
+
+    @Slot("QVariant")
+    def playSong(self, data):
+        print(data)
