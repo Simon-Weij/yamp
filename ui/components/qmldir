@@ -2,3 +2,4 @@ module .
 SearchField 1.0 SearchField.qml
 FilterBar 1.0 FilterBar.qml
 FilterButton 1.0 FilterButton.qml
+ResultCard 1.0 ResultCard.qml
