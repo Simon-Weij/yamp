@@ -9,19 +9,16 @@ import (
 	"github.com/adrg/xdg"
 )
 
-type Song struct {
-	Title  string
-	Artist string
-	Path   string
-}
-
 func CreatePlaylist(playlistName string) error {
 	playlistFile := filepath.Join(xdg.UserDirs.Music, "playlists", playlistName)
 
-	if _, err := os.Stat(playlistFile); err == nil {
-		return fmt.Errorf("playlist already exists")
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("failed to check playlist: %w", err)
+	playlistExists, err := PlaylistExists(playlistName)
+	if err != nil {
+		return err
+	}
+
+	if playlistExists {
+		return fmt.Errorf("playlist %s already exists", playlistName)
 	}
 
 	dir := filepath.Dir(playlistFile)
@@ -34,4 +31,42 @@ func CreatePlaylist(playlistName string) error {
 	}
 
 	return nil
+}
+
+func AddItemToPlaylist(playlistName, artist, title, location string) error {
+	playlistFile := filepath.Join(xdg.UserDirs.Music, "playlists", playlistName)
+
+	playlistExists, err := PlaylistExists(playlistName)
+	if err != nil {
+		return err
+	}
+
+	if !playlistExists {
+		return fmt.Errorf("playlist %s doesn't exist", playlistName)
+	}
+
+	file, err := os.OpenFile(playlistFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return fmt.Errorf("could not open file %s: %w", playlistFile, err)
+	}
+	defer func() {
+		_ = file.Close()
+	}()
+
+	if _, err = fmt.Fprintf(file, "#EXTINF:-1,%s - %s\n%s\n", artist, title, location); err != nil {
+		return fmt.Errorf("could not write to file: %w", err)
+	}
+
+	return nil
+}
+
+func PlaylistExists(playlistName string) (bool, error) {
+	playlistFile := filepath.Join(xdg.UserDirs.Music, "playlists", playlistName)
+
+	if _, err := os.Stat(playlistFile); err == nil {
+		return true, nil
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return false, fmt.Errorf("failed to check playlist: %w", err)
+	}
+	return false, nil
 }

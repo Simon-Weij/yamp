@@ -14,7 +14,7 @@ func DownloadSong(name string, output string) error {
 	ytdlp.MustInstall(context.TODO(), nil)
 	ytdlp.MustInstallFFmpeg(context.TODO(), nil)
 
-	dl := ytdlp.New().ExtractAudio().AudioFormat("mp3").Verbose().Output(filepath.Join(output))
+	dl := ytdlp.New().ExtractAudio().AudioFormat("mp3").Verbose().ParseMetadata("title:%(artist)s - %(title)s").EmbedMetadata().Output(filepath.Join(output))
 
 	out, err := dl.Run(context.TODO(), "ytsearch1:"+name)
 

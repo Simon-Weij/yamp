@@ -3,12 +3,16 @@ module yamp
 go 1.26.2
 
 require (
+	github.com/adrg/xdg v0.5.3
+	github.com/google/uuid v1.6.0
+	github.com/lrstanley/go-ytdlp v1.3.5
+	github.com/spf13/cobra v1.10.2
+)
+
+require (
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect
-	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/lrstanley/go-ytdlp v1.3.5 // indirect
-	github.com/spf13/cobra v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
 	golang.org/x/crypto v0.50.0 // indirect

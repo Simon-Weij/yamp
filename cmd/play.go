@@ -23,6 +23,11 @@ var playCmd = &cobra.Command{
 		play.DownloadSong(songName, finalPath)
 
 		play.PlaySong(finalPath)
+
+		if err := os.RemoveAll(tempdir); err != nil {
+			return fmt.Errorf("could not clean up properly %w ", err)
+		}
+
 		return nil
 	},
 }
