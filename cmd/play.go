@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	play "yamp/internal"
+	"yamp/internal/play"
 
 	"github.com/spf13/cobra"
 )
