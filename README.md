@@ -19,9 +19,9 @@ resolve themselves
 
 ## Installation
 
-Currently, we don't package our project yet, since the project is in very early
-development, if you want to install the project anyways you can install it with
-the following steps
+Currently, we don't package project yet, this is because the project is very
+early in development if you want to install the project anyways, you can install
+it using the following steps
 
 ```bash
 # Clone the project 
@@ -38,27 +38,24 @@ mv yamp /some/other/location/in/path
 
 - More flexible playlists, currently they're really limited
 
-- Export playlists from popular platforms e.g Spotify/yt-music
+- Export playlists from popular platforms for example Spotify or youtube-music
 
 - Write tests
 
-## How does it work?
+## How Does It Work?
 
-#### The play command
+### The Play Command
 
-Currently this project heavily depends on yt-dlp for its core functionality,
-when a song is played using for example yamp play "Artist - Song name" yt-dlp is
-asked to download the song to a temporary directory, and is then played with
-mpv.
+When the play command is hit yt-dlp is asked to download the song to a temporary
+directory, after that the song is played with mpv
 
-#### Playlists
+### Playlists
 
-For playlists the song is first also downloaded to a temporary directory, very
-similar to the play command, but we collect some metadata, by getting the
-initial song request (Artist - Song name) and querying
+For playlists the song is first downloaded to a temporary directory then we
+collect some metadata, by getting the initial song request and querying
 [musicbrainz](https://musicbrainz.org/) with it. After we collect the metadata,
-the songs get added to ~/Music/yamp/Artist/Album/songname.mp3, then this
-metadata and song gets added to the specified playlist
+the songs get added to a directory like ~/Music/yamp/Artist/Album/songname.mp3,
+then ~/Music/playlists/playlistname.m3u gets written with the new song
 
 ## Contributing
 
@@ -69,9 +66,9 @@ Contributions are welcome! As long as:
 
 - Smaller changes like typoes don't need an issue, just open a PR directly
 
-- Getting help from AI in contributions is allowed, except if the PR is fully
-  automated with for example openclaw. Or if you can't reason over your changes
-  or don't understand them, only make a PR if you know what you changed and why
+- Getting help from AI in contributions is allowed, but don't fully automate the
+  PR with tools like openclaw. Or use ai in a way that you can't reason over
+  your changes, only open a PR if you know what changes you made and why
 
 - Please make sure your code is formatted correctly, and actually runs as
   expected
