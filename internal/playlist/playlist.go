@@ -1,24 +1,22 @@
 package playlist
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"yamp/internal/musicbrainz"
 
 	"github.com/adrg/xdg"
 )
 
 func CreatePlaylist(playlistName string) error {
-	playlistFile := filepath.Join(xdg.UserDirs.Music, "playlists", playlistName)
-
-	playlistExists, err := PlaylistExists(playlistName)
+	wantPlaylist := false
+	playlistFile, err := playlistSetup(playlistName, wantPlaylist)
 	if err != nil {
 		return err
-	}
-
-	if playlistExists {
-		return fmt.Errorf("playlist %s already exists", playlistName)
 	}
 
 	dir := filepath.Dir(playlistFile)
@@ -33,16 +31,68 @@ func CreatePlaylist(playlistName string) error {
 	return nil
 }
 
-func AddItemToPlaylist(playlistName, artist, title, location string) error {
+func playlistSetup(playlistName string, wantPlaylist bool) (string, error) {
 	playlistFile := filepath.Join(xdg.UserDirs.Music, "playlists", playlistName)
 
 	playlistExists, err := PlaylistExists(playlistName)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	if !playlistExists {
-		return fmt.Errorf("playlist %s doesn't exist", playlistName)
+	if !wantPlaylist && playlistExists {
+		return "", fmt.Errorf("could not find playlist %s: %w", playlistName, err)
+	}
+	if wantPlaylist && !playlistExists {
+		return "", fmt.Errorf("playlist %s doesn't exist", playlistName)
+	}
+
+	return playlistFile, nil
+}
+
+func ListPlaylistItems(playlistName string) ([]musicbrainz.Metadata, error) {
+	wantPlaylist := false
+	playlistFile, err := playlistSetup(playlistName, wantPlaylist)
+	if err != nil {
+		return nil, err
+	}
+
+	file, err := os.Open(playlistFile)
+	if err != nil {
+		return nil, fmt.Errorf("could not open file %s: %w", playlistFile, err)
+	}
+
+	scanner := bufio.NewScanner(file)
+
+	songsMetadata := []musicbrainz.Metadata{}
+	for scanner.Scan() {
+		if strings.HasPrefix(scanner.Text(), "#EXTINF:-1,") {
+			rest := strings.TrimPrefix(scanner.Text(), "#EXTINF:-1,")
+			parts := strings.Split(rest, " - ")
+			artist := parts[0]
+			title := parts[1]
+			metadata := musicbrainz.Metadata{
+				Artist: artist,
+				Title:  title,
+			}
+			songsMetadata = append(songsMetadata, metadata)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error occurred in scanner: %w", err)
+	}
+
+	if len(songsMetadata) == 0 {
+		return nil, fmt.Errorf("no songs found in playlist %s", playlistName)
+	}
+
+	return songsMetadata, nil
+}
+
+func AddItemToPlaylist(playlistName, artist, title, location string) error {
+	wantPlaylist := true
+	playlistFile, err := playlistSetup(playlistName, wantPlaylist)
+	if err != nil {
+		return err
 	}
 
 	file, err := os.OpenFile(playlistFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
