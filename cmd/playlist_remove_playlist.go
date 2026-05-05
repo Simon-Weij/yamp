@@ -8,8 +8,8 @@ import (
 )
 
 var removePlaylistCmd = &cobra.Command{
-	Use:     "remove-playlist",
-	Aliases: []string{"rm-playlist", "delete", "rmpl"},
+	Use:     "delete",
+	Aliases: []string{"remove", "rm", "rm-playlist"},
 	Args:    cobra.ExactArgs(1),
 	Short:   "Remove a playlist",
 	RunE: func(cmd *cobra.Command, args []string) error {

@@ -8,10 +8,10 @@ import (
 )
 
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Aliases: []string{"songs", "tracks", "items"},
-	Args:  cobra.ExactArgs(1),
-	Short: "List all songs in an playlist",
+	Use:     "songs",
+	Aliases: []string{"tracks", "items"},
+	Args:    cobra.ExactArgs(1),
+	Short:   "List songs in a playlist",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		items, err := playlist.ListPlaylistItems(args[0])
 		if err != nil {

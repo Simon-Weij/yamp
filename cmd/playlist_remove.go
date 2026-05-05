@@ -9,10 +9,10 @@ import (
 )
 
 var removeCmd = &cobra.Command{
-	Use:   "remove",
-	Aliases: []string{"rm"},
-	Args:  cobra.ExactArgs(2),
-	Short: "Remove a song from a playlist",
+	Use:     "remove-song",
+	Aliases: []string{"rm-song", "remove-track"},
+	Args:    cobra.ExactArgs(2),
+	Short:   "Remove a song from a playlist",
 	Run: func(cmd *cobra.Command, args []string) {
  		artist := args[0]
 		title := args[1]

@@ -8,9 +8,9 @@ import (
 )
 
 var playlistListCmd = &cobra.Command{
-	Use:   "list-playlists",
+	Use:     "list",
 	Aliases: []string{"ls"},
-	Short: "List playlists",
+	Short:   "List playlists",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		playlists, err := playlist.ListPlaylists()
 		if err != nil {

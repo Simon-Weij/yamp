@@ -12,7 +12,7 @@ import (
 var playCmd = &cobra.Command{
 	Use:   "play",
 	Aliases: []string{"p"},
-	Short: "A brief description of your command",
+	Short: "Play a song by name",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		songName := args[0]
