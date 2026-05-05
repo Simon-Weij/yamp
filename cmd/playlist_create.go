@@ -9,7 +9,8 @@ import (
 
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "A brief description of your command",
+	Aliases: []string{"new", "mk"},
+	Short: "Create a new playlist",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := playlist.CreatePlaylist(args[0]); err != nil {

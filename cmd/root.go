@@ -9,6 +9,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "yamp",
 	Short: "Yet another music player",
+	SilenceUsage: true,
 }
 
 func Execute() {

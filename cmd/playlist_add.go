@@ -16,6 +16,7 @@ import (
 
 var addCmd = &cobra.Command{
 	Use:   "add",
+	Aliases: []string{"a"},
 	Args:  cobra.ExactArgs(2),
 	Short: "Add songs to your playlist",
 	RunE: func(cmd *cobra.Command, args []string) error {

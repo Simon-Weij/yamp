@@ -11,6 +11,7 @@ import (
 
 var playCmd = &cobra.Command{
 	Use:   "play",
+	Aliases: []string{"p"},
 	Short: "A brief description of your command",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {

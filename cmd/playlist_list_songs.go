@@ -9,8 +9,9 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
+	Aliases: []string{"songs", "tracks", "items"},
 	Args:  cobra.ExactArgs(1),
-	Short: "A brief description of your command",
+	Short: "List all songs in an playlist",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		items, err := playlist.ListPlaylistItems(args[0])
 		if err != nil {
