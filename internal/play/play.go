@@ -11,6 +11,17 @@ import (
 )
 
 func DownloadSong(name string, output string) error {
+	info, err := os.Stat(output)
+	if err == nil {
+		if !info.IsDir() {
+			return nil
+		}
+		return fmt.Errorf("output path is a directory: %s", output)
+	}
+	if !os.IsNotExist(err) {
+		return fmt.Errorf("could not check output path %s: %w", output, err)
+	}
+
 	ytdlp.MustInstall(context.TODO(), nil)
 	ytdlp.MustInstallFFmpeg(context.TODO(), nil)
 

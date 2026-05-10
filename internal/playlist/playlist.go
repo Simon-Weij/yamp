@@ -7,14 +7,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"yamp/internal/musicbrainz"
+	"yamp/internal/musicdiscovery"
 
 	"github.com/adrg/xdg"
 )
 
-func CreatePlaylist(playlistName string) error {
+func CreatePlaylist(playlistName string, isInternal bool) error {
 	wantPlaylist := false
-	playlistFile, err := playlistSetup(playlistName, wantPlaylist)
+	playlistFile, err := playlistSetup(playlistName, wantPlaylist, isInternal)
 	if err != nil {
 		return err
 	}
@@ -31,10 +31,15 @@ func CreatePlaylist(playlistName string) error {
 	return nil
 }
 
-func playlistSetup(playlistName string, wantPlaylist bool) (string, error) {
-	playlistFile := filepath.Join(xdg.UserDirs.Music, "playlists", playlistName)
+func playlistSetup(playlistName string, wantPlaylist, isInternal bool) (string, error) {
+	playlistFile := ""
+	if !isInternal {
+		playlistFile = filepath.Join(xdg.UserDirs.Music, "playlists", playlistName)
+	} else {
+		playlistFile = filepath.Join(xdg.UserDirs.Music, "playlists", "internal", playlistName)
+	}
 
-	playlistExists, err := PlaylistExists(playlistName)
+	playlistExists, err := PlaylistExists(playlistName, isInternal)
 	if err != nil {
 		return "", err
 	}
@@ -49,9 +54,9 @@ func playlistSetup(playlistName string, wantPlaylist bool) (string, error) {
 	return playlistFile, nil
 }
 
-func ListPlaylistItems(playlistName string) ([]musicbrainz.Metadata, error) {
+func ListPlaylistItems(playlistName string, isInternal bool) ([]musicdiscovery.Metadata, error) {
 	wantPlaylist := true
-	playlistFile, err := playlistSetup(playlistName, wantPlaylist)
+	playlistFile, err := playlistSetup(playlistName, wantPlaylist, isInternal)
 	if err != nil {
 		return nil, err
 	}
@@ -63,14 +68,14 @@ func ListPlaylistItems(playlistName string) ([]musicbrainz.Metadata, error) {
 
 	scanner := bufio.NewScanner(file)
 
-	songsMetadata := []musicbrainz.Metadata{}
+	songsMetadata := []musicdiscovery.Metadata{}
 	for scanner.Scan() {
 		if strings.HasPrefix(scanner.Text(), "#EXTINF:-1,") {
 			rest := strings.TrimPrefix(scanner.Text(), "#EXTINF:-1,")
 			parts := strings.Split(rest, " - ")
 			artist := parts[0]
 			title := parts[1]
-			metadata := musicbrainz.Metadata{
+			metadata := musicdiscovery.Metadata{
 				Artist: artist,
 				Title:  title,
 			}
@@ -88,9 +93,9 @@ func ListPlaylistItems(playlistName string) ([]musicbrainz.Metadata, error) {
 	return songsMetadata, nil
 }
 
-func AddItemToPlaylist(playlistName, artist, title, location string) error {
+func AddItemToPlaylist(playlistName, artist, title, location string, isInternal bool) error {
 	wantPlaylist := true
-	playlistFile, err := playlistSetup(playlistName, wantPlaylist)
+	playlistFile, err := playlistSetup(playlistName, wantPlaylist, isInternal)
 	if err != nil {
 		return err
 	}
@@ -112,7 +117,8 @@ func AddItemToPlaylist(playlistName, artist, title, location string) error {
 
 func RemoveItemFromPlaylist(playlistName, artist, title string) error {
 	wantPlaylist := true
-	playlistFile, err := playlistSetup(playlistName, wantPlaylist)
+	isInternal := false
+	playlistFile, err := playlistSetup(playlistName, wantPlaylist, isInternal)
 	if err != nil {
 		return err
 	}
@@ -170,8 +176,12 @@ func RemoveItemFromPlaylist(playlistName, artist, title string) error {
 	return nil
 }
 
-func PlaylistExists(playlistName string) (bool, error) {
-	playlistFile := filepath.Join(xdg.UserDirs.Music, "playlists", playlistName)
+func PlaylistExists(playlistName string, isInternal bool) (bool, error) {
+	playlistDir := filepath.Join(xdg.UserDirs.Music, "playlists")
+	if isInternal {
+		playlistDir = filepath.Join(playlistDir, "internal")
+	}
+	playlistFile := filepath.Join(playlistDir, playlistName)
 
 	if _, err := os.Stat(playlistFile); err == nil {
 		return true, nil
@@ -204,7 +214,8 @@ func ListPlaylists() ([]string, error) {
 
 func DeletePlaylist(playlistName string) error {
 	wantPlaylist := true
-	playlistFile, err := playlistSetup(playlistName, wantPlaylist)
+	isInternal := false
+	playlistFile, err := playlistSetup(playlistName, wantPlaylist, isInternal)
 	if err != nil {
 		return err
 	}
@@ -214,4 +225,8 @@ func DeletePlaylist(playlistName string) error {
 	}
 
 	return nil
+}
+
+func ConvertSongMetadataToFilePath(artist, album, songName string) string {
+	return filepath.Join(xdg.UserDirs.Music, "yamp", artist, album, songName+".mp3")
 }

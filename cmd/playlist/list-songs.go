@@ -1,4 +1,4 @@
-package cmd
+package playlistcmd
 
 import (
 	"fmt"
@@ -13,7 +13,8 @@ var listCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	Short:   "List songs in a playlist",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		items, err := playlist.ListPlaylistItems(args[0])
+		isInternal := false
+		items, err := playlist.ListPlaylistItems(args[0], isInternal)
 		if err != nil {
 			return fmt.Errorf("could not list playlist items: %w", err)
 		}

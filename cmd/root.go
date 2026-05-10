@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	playlistcmd "yamp/cmd/playlist"
 
 	"github.com/spf13/cobra"
 )
@@ -20,4 +21,5 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.AddCommand(playlistcmd.Command())
 }

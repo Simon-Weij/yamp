@@ -1,11 +1,11 @@
-package cmd
+package playlistcmd
 
 import (
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"yamp/internal/musicbrainz"
+	"yamp/internal/musicdiscovery"
 	"yamp/internal/play"
 	"yamp/internal/playlist"
 
@@ -15,15 +15,16 @@ import (
 )
 
 var addCmd = &cobra.Command{
-	Use:   "add",
+	Use:     "add",
 	Aliases: []string{"a"},
-	Args:  cobra.ExactArgs(2),
-	Short: "Add songs to your playlist",
+	Args:    cobra.ExactArgs(2),
+	Short:   "Add songs to your playlist",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		playlistName := args[0]
 		songName := args[1]
 
-		playlistExists, err := playlist.PlaylistExists(playlistName)
+		isInternal := false
+		playlistExists, err := playlist.PlaylistExists(playlistName, isInternal)
 		if err != nil {
 			return fmt.Errorf("something went wrong while checking is playlist exists: %w", err)
 		}
@@ -44,7 +45,7 @@ var addCmd = &cobra.Command{
 			return fmt.Errorf("could not initialise song: %w", err)
 		}
 
-		if err := playlist.AddItemToPlaylist(playlistName, metadata.Artist, metadata.Title, songLocation); err != nil {
+		if err := playlist.AddItemToPlaylist(playlistName, metadata.Artist, metadata.Title, songLocation, isInternal); err != nil {
 			return fmt.Errorf("could not add song to playlist: %w", err)
 		}
 
@@ -54,8 +55,8 @@ var addCmd = &cobra.Command{
 	},
 }
 
-func initaliseSong(song string, path string) (string, *musicbrainz.Metadata, error) {
-	metadata, err := musicbrainz.ExtractMetadata(song)
+func initaliseSong(song string, path string) (string, *musicdiscovery.Metadata, error) {
+	metadata, err := musicdiscovery.ExtractMetadata(song)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to extract metadata: %s ", err)
 	}
@@ -105,3 +106,4 @@ func moveFile(sourcePath, destPath string) error {
 func init() {
 	playlistCmd.AddCommand(addCmd)
 }
+

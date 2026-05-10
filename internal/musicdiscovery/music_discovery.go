@@ -1,10 +1,14 @@
-package musicbrainz
+package musicdiscovery
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
+
+	"github.com/lrstanley/go-ytdlp"
 )
 
 type MusicbrainzResponse struct {
@@ -68,4 +72,27 @@ func ExtractMetadata(name string) (*Metadata, error) {
 		Title:  rec.Title,
 		Album:  rec.Releases[0].ReleaseGroup.Title,
 	}, nil
+}
+
+func GetSimilarSongs(name string) (*ytdlp.Result, error) {
+	ytdlp.MustInstall(context.TODO(), nil)
+	ytdlp.MustInstallBun(context.TODO(), nil)
+	ytdlp.MustInstallFFmpeg(context.TODO(), nil)
+
+	result, err := ytdlp.New().Print("id").Run(context.TODO(), "ytsearch1:"+name)
+	if err != nil {
+		return nil, fmt.Errorf("could not search for song %s: %w", name, err)
+	}
+	id := strings.TrimSpace(result.Stdout)
+	if id == "" {
+		return nil, fmt.Errorf("could not search for song %s: empty video id", name)
+	}
+
+	url := fmt.Sprintf("https://www.youtube.com/watch?v=%s&list=RD%s", id, id)
+	songs, err := ytdlp.New().GetTitle().FlatPlaylist().PlaylistItems("2-11").Run(context.TODO(), url)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch similar songs for %s: %w", name, err)
+	}
+
+	return songs, nil
 }

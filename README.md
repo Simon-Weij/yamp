@@ -36,14 +36,15 @@ mv yamp /some/other/location/in/path
 
 ## Usage
 
-- `yamp play` (aliases: `p`): Play a song by name
+- `yamp play <song>` (aliases: `p`): Play a song by name
 - `yamp playlist` (aliases: `pl`): Manage playlists
-- `yamp playlist add` (aliases: `a`): Add songs to your playlist
-- `yamp playlist create` (aliases: `new`, `mk`): Create a new playlist
+- `yamp playlist add <playlist> <song>` (aliases: `a`): Add songs to your playlist
+- `yamp playlist create <name>` (aliases: `new`, `mk`): Create a new playlist
 - `yamp playlist list` (aliases: `ls`): List playlists
-- `yamp playlist songs` (aliases: `tracks`, `items`): List songs in a playlist
-- `yamp playlist delete` (aliases: `remove`, `rm`, `rm-playlist`): Remove a playlist
-- `yamp playlist remove-song` (aliases: `rm-song`, `remove-track`): Remove a song from a playlist
+- `yamp playlist songs <playlist>` (aliases: `tracks`, `items`): List songs in a playlist
+- `yamp playlist delete <name>` (aliases: `remove`, `rm`, `rm-playlist`): Remove a playlist
+- `yamp playlist remove-song <artist> <title> --playlist <name>` (aliases: `rm-song`, `remove-track`): Remove a song from a playlist
+- `yamp playlist similar-to <song>`: Make a playlist with similar songs
 
 ## Roadmap
 

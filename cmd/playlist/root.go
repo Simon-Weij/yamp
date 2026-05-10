@@ -1,4 +1,4 @@
-package cmd
+package playlistcmd
 
 import (
 	"github.com/spf13/cobra"
@@ -10,7 +10,6 @@ var playlistCmd = &cobra.Command{
 	Short:   "Manage playlists",
 }
 
-func init() {
-	rootCmd.AddCommand(playlistCmd)
-
+func Command() *cobra.Command {
+	return playlistCmd
 }
