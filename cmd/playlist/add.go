@@ -80,26 +80,32 @@ func initaliseSong(song string, path string) (string, *musicdiscovery.Metadata, 
 func moveFile(sourcePath, destPath string) error {
 	inputFile, err := fs.Open(sourcePath)
 	if err != nil {
-		return fmt.Errorf("Couldn't open source file: %v", err)
+		return fmt.Errorf("could not open source file: %w", err)
 	}
-	defer inputFile.Close()
 
 	outputFile, err := fs.Create(destPath)
 	if err != nil {
-		return fmt.Errorf("Couldn't open dest file: %v", err)
+		_ = inputFile.Close()
+		return fmt.Errorf("could not open dest file: %w", err)
 	}
-	defer outputFile.Close()
 
 	_, err = io.Copy(outputFile, inputFile)
 	if err != nil {
-		return fmt.Errorf("Couldn't copy to dest from source: %v", err)
+		_ = outputFile.Close()
+		_ = inputFile.Close()
+		return fmt.Errorf("could not copy to dest from source: %w", err)
 	}
-
-	inputFile.Close()
+	if err := outputFile.Close(); err != nil {
+		_ = inputFile.Close()
+		return fmt.Errorf("could not close dest file: %w", err)
+	}
+	if err := inputFile.Close(); err != nil {
+		return fmt.Errorf("could not close source file: %w", err)
+	}
 
 	err = fs.Remove(sourcePath)
 	if err != nil {
-		return fmt.Errorf("Couldn't remove source file: %v", err)
+		return fmt.Errorf("could not remove source file: %w", err)
 	}
 	return nil
 }

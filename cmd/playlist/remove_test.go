@@ -53,8 +53,9 @@ func TestRemoveCommand(t *testing.T) {
 				tt.setup(t)
 			}
 
-			removeCmd.Flags().Set("playlist", tt.playlist)
-			err := removeCmd.RunE(removeCmd, tt.args)
+			err := removeCmd.Flags().Set("playlist", tt.playlist)
+			require.NoError(t, err)
+			err = removeCmd.RunE(removeCmd, tt.args)
 			if tt.wantErr {
 				require.Error(t, err)
 				if tt.wantErrIn != "" {

@@ -117,6 +117,6 @@ var (
 		return ytdlp.New().Print("id").Run(context.TODO(), "ytsearch1:"+name)
 	}
 	ytdlpGetSimilar = func(url string) (*ytdlp.Result, error) {
-		return ytdlp.New().GetTitle().FlatPlaylist().PlaylistItems("2-11").Run(context.TODO(), url)
+		return ytdlp.New().Print("title").FlatPlaylist().PlaylistItems("2-11").Run(context.TODO(), url)
 	}
 )
