@@ -208,6 +208,119 @@ func TestListPlaylistItems(t *testing.T) {
 	}
 }
 
+func TestRemoveItemFromPlaylist(t *testing.T) {
+	type playlistItem struct {
+		artist   string
+		title    string
+		location string
+	}
+
+	tests := []struct {
+		name         string
+		playlistName string
+		setup        func(t *testing.T)
+		removeArtist string
+		removeTitle  string
+		wantItems    []playlistItem
+		wantErr      bool
+	}{
+		{
+			name:         "remove single item",
+			playlistName: "single",
+			setup: func(t *testing.T) {
+				err := CreatePlaylist("single", false)
+				require.NoError(t, err)
+				err = AddItemToPlaylist("single", "artist", "title", "/path/one", false)
+				require.NoError(t, err)
+			},
+			removeArtist: "artist",
+			removeTitle:  "title",
+			wantItems:    []playlistItem{},
+		},
+		{
+			name:         "remove one of multiple items",
+			playlistName: "multi",
+			setup: func(t *testing.T) {
+				err := CreatePlaylist("multi", false)
+				require.NoError(t, err)
+				err = AddItemToPlaylist("multi", "artist1", "title1", "/path/one", false)
+				require.NoError(t, err)
+				err = AddItemToPlaylist("multi", "artist2", "title2", "/path/two", false)
+				require.NoError(t, err)
+			},
+			removeArtist: "artist1",
+			removeTitle:  "title1",
+			wantItems:    []playlistItem{{artist: "artist2", title: "title2", location: "/path/two"}},
+		},
+		{
+			name:         "case-insensitive match",
+			playlistName: "case",
+			setup: func(t *testing.T) {
+				err := CreatePlaylist("case", false)
+				require.NoError(t, err)
+				err = AddItemToPlaylist("case", "Artist", "Title", "/path/one", false)
+				require.NoError(t, err)
+			},
+			removeArtist: "artist",
+			removeTitle:  "title",
+			wantItems:    []playlistItem{},
+		},
+		{
+			name:         "song not found",
+			playlistName: "notfound",
+			setup: func(t *testing.T) {
+				err := CreatePlaylist("notfound", false)
+				require.NoError(t, err)
+				err = AddItemToPlaylist("notfound", "artist", "title", "/path/one", false)
+				require.NoError(t, err)
+			},
+			removeArtist: "other",
+			removeTitle:  "song",
+			wantErr:      true,
+		},
+		{
+			name:         "missing playlist",
+			playlistName: "missing",
+			removeArtist: "artist",
+			removeTitle:  "title",
+			wantErr:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldFs := playlistFs
+			playlistFs = afero.NewMemMapFs()
+			t.Cleanup(func() {
+				playlistFs = oldFs
+			})
+
+			if tt.setup != nil {
+				tt.setup(t)
+			}
+
+			err := RemoveItemFromPlaylist(tt.playlistName, tt.removeArtist, tt.removeTitle)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			baseDir := filepath.Join(xdg.UserDirs.Music, "playlists")
+			path := filepath.Join(baseDir, tt.playlistName+".m3u")
+
+			data, err := afero.ReadFile(playlistFs, path)
+			require.NoError(t, err)
+
+			expected := "#EXTM3U\n"
+			for _, item := range tt.wantItems {
+				expected += fmt.Sprintf("#EXTINF:-1,%s - %s\n%s\n", item.artist, item.title, item.location)
+			}
+			assert.Equal(t, expected, string(data))
+		})
+	}
+}
+
 func TestCreatePlaylist(t *testing.T) {
 	tests := []struct {
 		name                string
