@@ -10,6 +10,22 @@ import (
 	"github.com/lrstanley/go-ytdlp"
 )
 
+
+var (
+	ytdlpInstall = func() {
+		ytdlp.MustInstall(context.TODO(), nil)
+	}
+	ytdlpInstallFFmpeg = func() {
+		ytdlp.MustInstallFFmpeg(context.TODO(), nil)
+	}
+	ytdlpDownload = func(name, output string) (*ytdlp.Result, error) {
+		dl := ytdlp.New().ExtractAudio().AudioFormat("mp3").Verbose().ParseMetadata("title:%(artist)s - %(title)s").EmbedMetadata().Output(filepath.Join(output))
+		return dl.Run(context.TODO(), "ytsearch1:"+name)
+	}
+	execCommand = exec.Command
+)
+
+
 func DownloadSong(name string, output string) error {
 	info, err := os.Stat(output)
 	if err == nil {
@@ -22,21 +38,23 @@ func DownloadSong(name string, output string) error {
 		return fmt.Errorf("could not check output path %s: %w", output, err)
 	}
 
-	ytdlp.MustInstall(context.TODO(), nil)
-	ytdlp.MustInstallFFmpeg(context.TODO(), nil)
+	ytdlpInstall()
+	ytdlpInstallFFmpeg()
 
-	dl := ytdlp.New().ExtractAudio().AudioFormat("mp3").Verbose().ParseMetadata("title:%(artist)s - %(title)s").EmbedMetadata().Output(filepath.Join(output))
-
-	out, err := dl.Run(context.TODO(), "ytsearch1:"+name)
+	out, err := ytdlpDownload(name, output)
 
 	if err != nil {
-		return fmt.Errorf("something went wrong while downloading song! %w with the following logs: %s", err, out)
+		logOutput := ""
+		if out != nil {
+			logOutput = out.Stdout
+		}
+		return fmt.Errorf("something went wrong while downloading song! %w with the following logs: %s", err, logOutput)
 	}
 	return nil
 }
 
 func PlaySong(path string) error {
-	cmd := exec.Command("mpv", path)
+	cmd := execCommand("mpv", path)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
