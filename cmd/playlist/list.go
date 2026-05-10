@@ -12,7 +12,7 @@ var playlistListCmd = &cobra.Command{
 	Aliases: []string{"ls"},
 	Short:   "List playlists",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		playlists, err := playlist.ListPlaylists()
+		playlists, err := listPlaylistsFn()
 		if err != nil {
 			return err
 		}
@@ -22,6 +22,8 @@ var playlistListCmd = &cobra.Command{
 		return nil
 	},
 }
+
+var listPlaylistsFn = playlist.ListPlaylists
 
 func init() {
 	playlistCmd.AddCommand(playlistListCmd)
