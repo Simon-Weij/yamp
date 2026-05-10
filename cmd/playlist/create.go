@@ -14,13 +14,15 @@ var createCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		isInternal := false
-		if err := playlist.CreatePlaylist(args[0], isInternal); err != nil {
+		if err := createPlaylistFn(args[0], isInternal); err != nil {
 			return fmt.Errorf("could not create playlist: %w", err)
 		}
 		fmt.Printf("successfully created playlist %s \n", args[0])
 		return nil
 	},
 }
+
+var createPlaylistFn = playlist.CreatePlaylist
 
 func init() {
 	playlistCmd.AddCommand(createCmd)

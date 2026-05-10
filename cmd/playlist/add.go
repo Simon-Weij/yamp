@@ -11,6 +11,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/google/uuid"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +25,7 @@ var addCmd = &cobra.Command{
 		songName := args[1]
 
 		isInternal := false
-		playlistExists, err := playlist.PlaylistExists(playlistName, isInternal)
+		playlistExists, err := playlistExistsFn(playlistName, isInternal)
 		if err != nil {
 			return fmt.Errorf("something went wrong while checking is playlist exists: %w", err)
 		}
@@ -32,11 +33,11 @@ var addCmd = &cobra.Command{
 			return fmt.Errorf("playlist doesn't exist")
 		}
 
-		id := uuid.NewString()
+		id := uuidNewString()
 
-		songPath := filepath.Join(os.TempDir(), "yamp", id, "song.mp3")
+		songPath := filepath.Join(tempDir(), "yamp", id, "song.mp3")
 
-		if err := play.DownloadSong(songName, songPath); err != nil {
+		if err := downloadSong(songName, songPath); err != nil {
 			return fmt.Errorf("something went wrong while downloading song: %w", err)
 		}
 
@@ -45,7 +46,7 @@ var addCmd = &cobra.Command{
 			return fmt.Errorf("could not initialise song: %w", err)
 		}
 
-		if err := playlist.AddItemToPlaylist(playlistName, metadata.Artist, metadata.Title, songLocation, isInternal); err != nil {
+		if err := addItemToPlaylist(playlistName, metadata.Artist, metadata.Title, songLocation, isInternal); err != nil {
 			return fmt.Errorf("could not add song to playlist: %w", err)
 		}
 
@@ -56,20 +57,20 @@ var addCmd = &cobra.Command{
 }
 
 func initaliseSong(song string, path string) (string, *musicdiscovery.Metadata, error) {
-	metadata, err := musicdiscovery.ExtractMetadata(song)
+	metadata, err := extractMetadata(song)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to extract metadata: %s ", err)
 	}
 
-	songpath := filepath.Join(xdg.UserDirs.Music, "yamp", metadata.Artist, metadata.Album)
+	songpath := filepath.Join(userMusicDir(), "yamp", metadata.Artist, metadata.Album)
 
-	if err := os.MkdirAll(songpath, 0755); err != nil {
+	if err := mkdirAll(songpath, 0755); err != nil {
 		return "", nil, fmt.Errorf("something went wrong while creating directory %s: %w", songpath, err)
 	}
 
 	destination := filepath.Join(songpath, fmt.Sprintf("%s.mp3", metadata.Title))
 
-	if err := moveFile(path, destination); err != nil {
+	if err := moveFileFn(path, destination); err != nil {
 		return "", nil, fmt.Errorf("something went wrong while moving file from %s to %s: %w", path, destination, err)
 	}
 
@@ -77,13 +78,13 @@ func initaliseSong(song string, path string) (string, *musicdiscovery.Metadata, 
 }
 
 func moveFile(sourcePath, destPath string) error {
-	inputFile, err := os.Open(sourcePath)
+	inputFile, err := fs.Open(sourcePath)
 	if err != nil {
 		return fmt.Errorf("Couldn't open source file: %v", err)
 	}
 	defer inputFile.Close()
 
-	outputFile, err := os.Create(destPath)
+	outputFile, err := fs.Create(destPath)
 	if err != nil {
 		return fmt.Errorf("Couldn't open dest file: %v", err)
 	}
@@ -96,12 +97,25 @@ func moveFile(sourcePath, destPath string) error {
 
 	inputFile.Close()
 
-	err = os.Remove(sourcePath)
+	err = fs.Remove(sourcePath)
 	if err != nil {
 		return fmt.Errorf("Couldn't remove source file: %v", err)
 	}
 	return nil
 }
+
+var (
+	fs              = afero.NewOsFs()
+	playlistExistsFn = playlist.PlaylistExists
+	downloadSong     = play.DownloadSong
+	extractMetadata  = musicdiscovery.ExtractMetadata
+	addItemToPlaylist = playlist.AddItemToPlaylist
+	mkdirAll          = fs.MkdirAll
+	moveFileFn        = moveFile
+	userMusicDir      = func() string { return xdg.UserDirs.Music }
+	tempDir           = os.TempDir
+	uuidNewString     = uuid.NewString
+)
 
 func init() {
 	playlistCmd.AddCommand(addCmd)
