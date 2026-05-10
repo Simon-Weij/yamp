@@ -321,6 +321,161 @@ func TestRemoveItemFromPlaylist(t *testing.T) {
 	}
 }
 
+func TestPlaylistExists(t *testing.T) {
+	tests := []struct {
+		name         string
+		playlistName string
+		isInternal   bool
+		preCreate    bool
+		want         bool
+	}{
+		{
+			name:         "missing playlist",
+			playlistName: "missing",
+			want:         false,
+		},
+		{
+			name:         "existing playlist",
+			playlistName: "exists",
+			preCreate:    true,
+			want:         true,
+		},
+		{
+			name:         "existing internal playlist",
+			playlistName: "internaltest",
+			isInternal:   true,
+			preCreate:    true,
+			want:         true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldFs := playlistFs
+			playlistFs = afero.NewMemMapFs()
+			t.Cleanup(func() {
+				playlistFs = oldFs
+			})
+
+			if tt.preCreate {
+				err := CreatePlaylist(tt.playlistName, tt.isInternal)
+				require.NoError(t, err)
+			}
+
+			exists, err := PlaylistExists(tt.playlistName, tt.isInternal)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, exists)
+		})
+	}
+}
+
+func TestListPlaylists(t *testing.T) {
+	tests := []struct {
+		name      string
+		setup     func(t *testing.T)
+		want      []string
+		wantEmpty bool
+	}{
+		{
+			name:      "missing directory returns empty",
+			wantEmpty: true,
+		},
+		{
+			name: "lists files only",
+			setup: func(t *testing.T) {
+				baseDir := filepath.Join(xdg.UserDirs.Music, "playlists")
+				err := playlistFs.MkdirAll(baseDir, 0755)
+				require.NoError(t, err)
+				err = afero.WriteFile(playlistFs, filepath.Join(baseDir, "one.m3u"), []byte("#EXTM3U\n"), 0644)
+				require.NoError(t, err)
+				err = afero.WriteFile(playlistFs, filepath.Join(baseDir, "two.m3u"), []byte("#EXTM3U\n"), 0644)
+				require.NoError(t, err)
+				err = playlistFs.MkdirAll(filepath.Join(baseDir, "internal"), 0755)
+				require.NoError(t, err)
+			},
+			want: []string{"one.m3u", "two.m3u"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldFs := playlistFs
+			playlistFs = afero.NewMemMapFs()
+			t.Cleanup(func() {
+				playlistFs = oldFs
+			})
+
+			if tt.setup != nil {
+				tt.setup(t)
+			}
+
+			playlists, err := ListPlaylists()
+			require.NoError(t, err)
+			if tt.wantEmpty {
+				assert.Empty(t, playlists)
+				return
+			}
+			assert.ElementsMatch(t, tt.want, playlists)
+		})
+	}
+}
+
+func TestDeletePlaylist(t *testing.T) {
+	tests := []struct {
+		name         string
+		playlistName string
+		preCreate    bool
+		wantErr      bool
+	}{
+		{
+			name:         "delete existing playlist",
+			playlistName: "delete",
+			preCreate:    true,
+		},
+		{
+			name:         "delete missing playlist",
+			playlistName: "missing",
+			wantErr:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldFs := playlistFs
+			playlistFs = afero.NewMemMapFs()
+			t.Cleanup(func() {
+				playlistFs = oldFs
+			})
+
+			if tt.preCreate {
+				err := CreatePlaylist(tt.playlistName, false)
+				require.NoError(t, err)
+			}
+
+			err := DeletePlaylist(tt.playlistName)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			exists, err := PlaylistExists(tt.playlistName, false)
+			require.NoError(t, err)
+			assert.False(t, exists)
+		})
+	}
+}
+
+func TestConvertSongMetadataToFilePath(t *testing.T) {
+	artist := "artist"
+	album := "album"
+	song := "song"
+
+	path := ConvertSongMetadataToFilePath(artist, album, song)
+	baseDir := filepath.Join(xdg.UserDirs.Music, "yamp", artist, album)
+	assert.Equal(t, filepath.Join(baseDir, song+".mp3"), path)
+}
+
 func TestCreatePlaylist(t *testing.T) {
 	tests := []struct {
 		name                string
