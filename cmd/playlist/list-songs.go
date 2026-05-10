@@ -14,7 +14,7 @@ var listCmd = &cobra.Command{
 	Short:   "List songs in a playlist",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		isInternal := false
-		items, err := playlist.ListPlaylistItems(args[0], isInternal)
+		items, err := listPlaylistItemsFn(args[0], isInternal)
 		if err != nil {
 			return fmt.Errorf("could not list playlist items: %w", err)
 		}
@@ -24,6 +24,8 @@ var listCmd = &cobra.Command{
 		return nil
 	},
 }
+
+var listPlaylistItemsFn = playlist.ListPlaylistItems
 
 func init() {
 	playlistCmd.AddCommand(listCmd)
