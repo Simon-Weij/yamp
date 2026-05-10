@@ -101,8 +101,8 @@ func TestAddSongsToPlaylist(t *testing.T) {
 		wantErrIn string
 	}{
 		{
-			name:    "create playlist error",
-			songs:   []string{"one"},
+			name:  "create playlist error",
+			songs: []string{"one"},
 			setup: func(t *testing.T) {
 				createPlaylistSimilarToFn = func(string, bool) error { return errors.New("boom") }
 			},
@@ -110,8 +110,8 @@ func TestAddSongsToPlaylist(t *testing.T) {
 			wantErrIn: "could not create playlist",
 		},
 		{
-			name:    "extract metadata error",
-			songs:   []string{"one"},
+			name:  "extract metadata error",
+			songs: []string{"one"},
 			setup: func(t *testing.T) {
 				createPlaylistSimilarToFn = func(string, bool) error { return nil }
 				extractMetadataFn = func(string) (*musicdiscovery.Metadata, error) { return nil, errors.New("boom") }

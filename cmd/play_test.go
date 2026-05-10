@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"testing"
-	"os"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

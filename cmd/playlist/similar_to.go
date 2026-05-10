@@ -77,11 +77,11 @@ func init() {
 }
 
 var (
-	getSimilarSongsFn              = musicdiscovery.GetSimilarSongs
-	addSongsToPlaylistFn           = addSongsToPlaylist
-	createPlaylistSimilarToFn      = playlist.CreatePlaylist
-	extractMetadataFn              = musicdiscovery.ExtractMetadata
+	getSimilarSongsFn               = musicdiscovery.GetSimilarSongs
+	addSongsToPlaylistFn            = addSongsToPlaylist
+	createPlaylistSimilarToFn       = playlist.CreatePlaylist
+	extractMetadataFn               = musicdiscovery.ExtractMetadata
 	convertSongMetadataToFilePathFn = playlist.ConvertSongMetadataToFilePath
-	downloadSongFn                 = play.DownloadSong
-	addItemToPlaylistFn            = playlist.AddItemToPlaylist
+	downloadSongFn                  = play.DownloadSong
+	addItemToPlaylistFn             = playlist.AddItemToPlaylist
 )

@@ -105,10 +105,10 @@ func moveFile(sourcePath, destPath string) error {
 }
 
 var (
-	fs              = afero.NewOsFs()
-	playlistExistsFn = playlist.PlaylistExists
-	downloadSong     = play.DownloadSong
-	extractMetadata  = musicdiscovery.ExtractMetadata
+	fs                = afero.NewOsFs()
+	playlistExistsFn  = playlist.PlaylistExists
+	downloadSong      = play.DownloadSong
+	extractMetadata   = musicdiscovery.ExtractMetadata
 	addItemToPlaylist = playlist.AddItemToPlaylist
 	mkdirAll          = fs.MkdirAll
 	moveFileFn        = moveFile
@@ -120,4 +120,3 @@ var (
 func init() {
 	playlistCmd.AddCommand(addCmd)
 }
-

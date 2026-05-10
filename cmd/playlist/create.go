@@ -8,10 +8,10 @@ import (
 )
 
 var createCmd = &cobra.Command{
-	Use:   "create",
+	Use:     "create",
 	Aliases: []string{"new", "mk"},
-	Short: "Create a new playlist",
-	Args:  cobra.ExactArgs(1),
+	Short:   "Create a new playlist",
+	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		isInternal := false
 		if err := createPlaylistFn(args[0], isInternal); err != nil {

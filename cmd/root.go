@@ -8,8 +8,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "yamp",
-	Short: "Yet another music player",
+	Use:          "yamp",
+	Short:        "Yet another music player",
 	SilenceUsage: true,
 }
 

@@ -104,7 +104,7 @@ func GetSimilarSongs(name string) (*ytdlp.Result, error) {
 var (
 	musicbrainzBaseURL = "https://musicbrainz.org/ws/2/recording/"
 	httpClient         = http.DefaultClient
-	ytdlpInstall = func() {
+	ytdlpInstall       = func() {
 		ytdlp.MustInstall(context.TODO(), nil)
 	}
 	ytdlpInstallBun = func() {

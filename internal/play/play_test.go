@@ -127,8 +127,8 @@ func TestDownloadSong(t *testing.T) {
 
 func TestPlaySong(t *testing.T) {
 	tests := []struct {
-		name      string
-		execCmd   func(name string, args ...string) *exec.Cmd
+		name     string
+		execCmd  func(name string, args ...string) *exec.Cmd
 		wantErr  bool
 		wantName string
 		wantArgs []string

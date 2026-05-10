@@ -29,10 +29,10 @@ func TestExtractMetadata(t *testing.T) {
 		validate  func(t *testing.T, r *http.Request)
 	}{
 		{
-			name: "success",
+			name:     "success",
 			response: `{"recordings":[{"title":"Song","artist-credit":[{"artist":{"name":"Artist"}}],"releases":[{"release-group":{"title":"Album"}}]}]}`,
-			status: 200,
-			want:   &Metadata{Artist: "Artist", Album: "Album", Title: "Song"},
+			status:   200,
+			want:     &Metadata{Artist: "Artist", Album: "Album", Title: "Song"},
 			validate: func(t *testing.T, r *http.Request) {
 				assert.Equal(t, "yamp/0.1", r.Header.Get("User-Agent"))
 			},
