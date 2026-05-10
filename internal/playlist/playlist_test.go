@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"testing"
+	"yamp/internal/musicdiscovery"
 
 	"github.com/adrg/xdg"
 	"github.com/spf13/afero"
@@ -104,6 +105,105 @@ func TestAddItemToPlaylist(t *testing.T) {
 				expected += fmt.Sprintf("#EXTINF:-1,%s - %s\n%s\n", item.artist, item.title, item.location)
 			}
 			assert.Equal(t, expected, string(data))
+		})
+	}
+}
+
+func TestListPlaylistItems(t *testing.T) {
+	tests := []struct {
+		name         string
+		playlistName string
+		isInternal   bool
+		setup        func(t *testing.T)
+		want         []musicdiscovery.Metadata
+		wantErr      bool
+	}{
+		{
+			name:         "missing playlist returns error",
+			playlistName: "missing",
+			wantErr:      true,
+		},
+		{
+			name:         "empty playlist returns error",
+			playlistName: "empty",
+			setup: func(t *testing.T) {
+				err := CreatePlaylist("empty", false)
+				require.NoError(t, err)
+			},
+			wantErr: true,
+		},
+		{
+			name:         "list single item",
+			playlistName: "single",
+			setup: func(t *testing.T) {
+				err := CreatePlaylist("single", false)
+				require.NoError(t, err)
+				err = AddItemToPlaylist("single", "artist", "title", "/path/one", false)
+				require.NoError(t, err)
+			},
+			want: []musicdiscovery.Metadata{{Artist: "artist", Title: "title"}},
+		},
+		{
+			name:         "list multiple items",
+			playlistName: "multi",
+			setup: func(t *testing.T) {
+				err := CreatePlaylist("multi", false)
+				require.NoError(t, err)
+				err = AddItemToPlaylist("multi", "artist1", "title1", "/path/one", false)
+				require.NoError(t, err)
+				err = AddItemToPlaylist("multi", "artist2", "title2", "/path/two", false)
+				require.NoError(t, err)
+			},
+			want: []musicdiscovery.Metadata{{Artist: "artist1", Title: "title1"}, {Artist: "artist2", Title: "title2"}},
+		},
+		{
+			name:         "internal playlist",
+			playlistName: "internaltest",
+			isInternal:   true,
+			setup: func(t *testing.T) {
+				err := CreatePlaylist("internaltest", true)
+				require.NoError(t, err)
+				err = AddItemToPlaylist("internaltest", "artist", "title", "/path/internal", true)
+				require.NoError(t, err)
+			},
+			want: []musicdiscovery.Metadata{{Artist: "artist", Title: "title"}},
+		},
+		{
+			name:         "ignores non-song lines",
+			playlistName: "mixed",
+			setup: func(t *testing.T) {
+				err := CreatePlaylist("mixed", false)
+				require.NoError(t, err)
+				baseDir := filepath.Join(xdg.UserDirs.Music, "playlists")
+				path := filepath.Join(baseDir, "mixed.m3u")
+				content := "#EXTM3U\n# comment\n#EXTINF:-1,artist - title\n/path/one\n#EXTINF:-1,artist2 - title2\n/path/two\n"
+				err = afero.WriteFile(playlistFs, path, []byte(content), 0644)
+				require.NoError(t, err)
+			},
+			want: []musicdiscovery.Metadata{{Artist: "artist", Title: "title"}, {Artist: "artist2", Title: "title2"}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldFs := playlistFs
+			playlistFs = afero.NewMemMapFs()
+			t.Cleanup(func() {
+				playlistFs = oldFs
+			})
+
+			if tt.setup != nil {
+				tt.setup(t)
+			}
+
+			items, err := ListPlaylistItems(tt.playlistName, tt.isInternal)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, items)
 		})
 	}
 }
