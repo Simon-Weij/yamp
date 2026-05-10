@@ -41,7 +41,7 @@ var playlistSimilarToCmd = &cobra.Command{
 
 func addSongsToPlaylist(songs []string, playlistName string) error {
 	isInternal := true
-	if err := createPlaylistFn(playlistName, isInternal); err != nil {
+	if err := createPlaylistSimilarToFn(playlistName, isInternal); err != nil {
 		return fmt.Errorf("could not create playlist: %w", err)
 	}
 	for _, song := range songs {
@@ -79,7 +79,7 @@ func init() {
 var (
 	getSimilarSongsFn              = musicdiscovery.GetSimilarSongs
 	addSongsToPlaylistFn           = addSongsToPlaylist
-	createPlaylistFn               = playlist.CreatePlaylist
+	createPlaylistSimilarToFn      = playlist.CreatePlaylist
 	extractMetadataFn              = musicdiscovery.ExtractMetadata
 	convertSongMetadataToFilePathFn = playlist.ConvertSongMetadataToFilePath
 	downloadSongFn                 = play.DownloadSong

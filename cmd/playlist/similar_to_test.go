@@ -104,7 +104,7 @@ func TestAddSongsToPlaylist(t *testing.T) {
 			name:    "create playlist error",
 			songs:   []string{"one"},
 			setup: func(t *testing.T) {
-				createPlaylistFn = func(string, bool) error { return errors.New("boom") }
+				createPlaylistSimilarToFn = func(string, bool) error { return errors.New("boom") }
 			},
 			wantErr:   true,
 			wantErrIn: "could not create playlist",
@@ -113,7 +113,7 @@ func TestAddSongsToPlaylist(t *testing.T) {
 			name:    "extract metadata error",
 			songs:   []string{"one"},
 			setup: func(t *testing.T) {
-				createPlaylistFn = func(string, bool) error { return nil }
+				createPlaylistSimilarToFn = func(string, bool) error { return nil }
 				extractMetadataFn = func(string) (*musicdiscovery.Metadata, error) { return nil, errors.New("boom") }
 			},
 			wantErr:   true,
@@ -123,7 +123,7 @@ func TestAddSongsToPlaylist(t *testing.T) {
 			name:  "download error",
 			songs: []string{"one"},
 			setup: func(t *testing.T) {
-				createPlaylistFn = func(string, bool) error { return nil }
+				createPlaylistSimilarToFn = func(string, bool) error { return nil }
 				extractMetadataFn = func(string) (*musicdiscovery.Metadata, error) {
 					return &musicdiscovery.Metadata{Artist: "a", Album: "b", Title: "t"}, nil
 				}
@@ -137,7 +137,7 @@ func TestAddSongsToPlaylist(t *testing.T) {
 			name:  "add item error",
 			songs: []string{"one"},
 			setup: func(t *testing.T) {
-				createPlaylistFn = func(string, bool) error { return nil }
+				createPlaylistSimilarToFn = func(string, bool) error { return nil }
 				extractMetadataFn = func(string) (*musicdiscovery.Metadata, error) {
 					return &musicdiscovery.Metadata{Artist: "a", Album: "b", Title: "t"}, nil
 				}
@@ -152,7 +152,7 @@ func TestAddSongsToPlaylist(t *testing.T) {
 			name:  "success",
 			songs: []string{"one"},
 			setup: func(t *testing.T) {
-				createPlaylistFn = func(string, bool) error { return nil }
+				createPlaylistSimilarToFn = func(string, bool) error { return nil }
 				extractMetadataFn = func(string) (*musicdiscovery.Metadata, error) {
 					return &musicdiscovery.Metadata{Artist: "a", Album: "b", Title: "t"}, nil
 				}
@@ -165,13 +165,13 @@ func TestAddSongsToPlaylist(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			oldCreate := createPlaylistFn
+			oldCreate := createPlaylistSimilarToFn
 			oldExtract := extractMetadataFn
 			oldConvert := convertSongMetadataToFilePathFn
 			oldDownload := downloadSongFn
 			oldAddItem := addItemToPlaylistFn
 			t.Cleanup(func() {
-				createPlaylistFn = oldCreate
+				createPlaylistSimilarToFn = oldCreate
 				extractMetadataFn = oldExtract
 				convertSongMetadataToFilePathFn = oldConvert
 				downloadSongFn = oldDownload

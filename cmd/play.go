@@ -16,16 +16,20 @@ var playCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		songName := args[0]
-		tempdir := filepath.Join(os.TempDir(), "yamp")
-		if err := os.MkdirAll(tempdir, 0700); err != nil {
+		tempdir := filepath.Join(tempDir(), "yamp")
+		if err := mkdirAll(tempdir, 0700); err != nil {
 			return fmt.Errorf("couldn't create directory %s", tempdir)
 		}
 		finalPath := filepath.Join(tempdir, "song.mp3")
-		play.DownloadSong(songName, finalPath)
+		if err := downloadSong(songName, finalPath); err != nil {
+			return fmt.Errorf("could not download song: %w", err)
+		}
 
-		play.PlaySong(finalPath)
+		if err := playSong(finalPath); err != nil {
+			return fmt.Errorf("could not play song: %w", err)
+		}
 
-		if err := os.RemoveAll(tempdir); err != nil {
+		if err := removeAll(tempdir); err != nil {
 			return fmt.Errorf("could not clean up properly %w ", err)
 		}
 
@@ -36,3 +40,11 @@ var playCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(playCmd)
 }
+
+var (
+	tempDir      = os.TempDir
+	mkdirAll     = os.MkdirAll
+	removeAll    = os.RemoveAll
+	downloadSong = play.DownloadSong
+	playSong     = play.PlaySong
+)
