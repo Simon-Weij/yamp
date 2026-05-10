@@ -10,10 +10,10 @@ import (
 )
 
 var playCmd = &cobra.Command{
-	Use:   "play",
+	Use:     "play",
 	Aliases: []string{"p"},
-	Short: "Play a song by name",
-	Args:  cobra.ExactArgs(1),
+	Short:   "Play a song by name",
+	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		songName := args[0]
 		tempdir := filepath.Join(os.TempDir(), "yamp")

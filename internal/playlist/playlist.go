@@ -10,9 +10,22 @@ import (
 	"yamp/internal/musicdiscovery"
 
 	"github.com/adrg/xdg"
+	"github.com/spf13/afero"
 )
 
+var playlistFs afero.Fs = afero.NewOsFs()
+
 func CreatePlaylist(playlistName string, isInternal bool) error {
+	var blacklistedNames = map[string]bool{
+		"":         true,
+		".":        true,
+		"..":       true,
+		"internal": true,
+	}
+
+	if blacklistedNames[playlistName] {
+		return fmt.Errorf("playlist name is not allowed")
+	}
 	wantPlaylist := false
 	playlistFile, err := playlistSetup(playlistName, wantPlaylist, isInternal)
 	if err != nil {
@@ -20,11 +33,11 @@ func CreatePlaylist(playlistName string, isInternal bool) error {
 	}
 
 	dir := filepath.Dir(playlistFile)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := playlistFs.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	if err := os.WriteFile(playlistFile, []byte("#EXTM3U\n"), 0644); err != nil {
+	if err := afero.WriteFile(playlistFs, playlistFile, []byte("#EXTM3U\n"), 0644); err != nil {
 		return fmt.Errorf("failed to create playlist: %w", err)
 	}
 
@@ -34,9 +47,9 @@ func CreatePlaylist(playlistName string, isInternal bool) error {
 func playlistSetup(playlistName string, wantPlaylist, isInternal bool) (string, error) {
 	playlistFile := ""
 	if !isInternal {
-		playlistFile = filepath.Join(xdg.UserDirs.Music, "playlists", playlistName)
+		playlistFile = filepath.Join(xdg.UserDirs.Music, "playlists", playlistName+".m3u")
 	} else {
-		playlistFile = filepath.Join(xdg.UserDirs.Music, "playlists", "internal", playlistName)
+		playlistFile = filepath.Join(xdg.UserDirs.Music, "playlists", "internal", playlistName+".m3u")
 	}
 
 	playlistExists, err := PlaylistExists(playlistName, isInternal)
@@ -61,10 +74,13 @@ func ListPlaylistItems(playlistName string, isInternal bool) ([]musicdiscovery.M
 		return nil, err
 	}
 
-	file, err := os.Open(playlistFile)
+	file, err := playlistFs.Open(playlistFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not open file %s: %w", playlistFile, err)
 	}
+	defer func() {
+		_ = file.Close()
+	}()
 
 	scanner := bufio.NewScanner(file)
 
@@ -100,7 +116,7 @@ func AddItemToPlaylist(playlistName, artist, title, location string, isInternal 
 		return err
 	}
 
-	file, err := os.OpenFile(playlistFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	file, err := playlistFs.OpenFile(playlistFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		return fmt.Errorf("could not open file %s: %w", playlistFile, err)
 	}
@@ -123,7 +139,7 @@ func RemoveItemFromPlaylist(playlistName, artist, title string) error {
 		return err
 	}
 
-	file, err := os.Open(playlistFile)
+	file, err := playlistFs.Open(playlistFile)
 	if err != nil {
 		return fmt.Errorf("could not open file %s: %w", playlistFile, err)
 	}
@@ -169,7 +185,7 @@ func RemoveItemFromPlaylist(playlistName, artist, title string) error {
 	if !strings.HasSuffix(output, "\n") {
 		output += "\n"
 	}
-	if err := os.WriteFile(playlistFile, []byte(output), 0644); err != nil {
+	if err := afero.WriteFile(playlistFs, playlistFile, []byte(output), 0644); err != nil {
 		return fmt.Errorf("could not write to file %s: %w", playlistFile, err)
 	}
 
@@ -181,9 +197,9 @@ func PlaylistExists(playlistName string, isInternal bool) (bool, error) {
 	if isInternal {
 		playlistDir = filepath.Join(playlistDir, "internal")
 	}
-	playlistFile := filepath.Join(playlistDir, playlistName)
+	playlistFile := filepath.Join(playlistDir, playlistName+".m3u")
 
-	if _, err := os.Stat(playlistFile); err == nil {
+	if _, err := playlistFs.Stat(playlistFile); err == nil {
 		return true, nil
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return false, fmt.Errorf("failed to check playlist: %w", err)
@@ -193,7 +209,7 @@ func PlaylistExists(playlistName string, isInternal bool) (bool, error) {
 
 func ListPlaylists() ([]string, error) {
 	playlistsDir := filepath.Join(xdg.UserDirs.Music, "playlists")
-	entries, err := os.ReadDir(playlistsDir)
+	entries, err := afero.ReadDir(playlistFs, playlistsDir)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return []string{}, nil
@@ -220,7 +236,7 @@ func DeletePlaylist(playlistName string) error {
 		return err
 	}
 
-	if err := os.Remove(playlistFile); err != nil {
+	if err := playlistFs.Remove(playlistFile); err != nil {
 		return fmt.Errorf("failed to delete playlist %s: %w", playlistName, err)
 	}
 

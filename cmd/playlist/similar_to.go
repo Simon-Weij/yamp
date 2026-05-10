@@ -33,7 +33,7 @@ var playlistSimilarToCmd = &cobra.Command{
 			return fmt.Errorf("could not add songs to playlist %w", err)
 		}
 
-		fmt.Printf("finished playlist " + playlistName)
+		fmt.Printf("finished playlist %s", playlistName)
 
 		return nil
 	},
