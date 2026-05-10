@@ -13,13 +13,15 @@ var removePlaylistCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	Short:   "Remove a playlist",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := playlist.DeletePlaylist(args[0]); err != nil {
+		if err := deletePlaylistFn(args[0]); err != nil {
 			return fmt.Errorf("could not remove playlist: %w", err)
 		}
 		fmt.Printf("successfully removed playlist %s \n", args[0])
 		return nil
 	},
 }
+
+var deletePlaylistFn = playlist.DeletePlaylist
 
 func init() {
 	playlistCmd.AddCommand(removePlaylistCmd)
