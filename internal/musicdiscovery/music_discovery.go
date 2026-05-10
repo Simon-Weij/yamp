@@ -35,7 +35,7 @@ type Metadata struct {
 
 func ExtractMetadata(name string) (*Metadata, error) {
 	query := url.QueryEscape(name) + "+AND+primarytype:Album+AND+secondarytype:(-Live)+AND+secondarytype:(-Compilation)+AND+secondarytype:(-Soundtrack)+AND+status:Official"
-	endpoint := "https://musicbrainz.org/ws/2/recording/?query=" + query + "&fmt=json&limit=1"
+	endpoint := musicbrainzBaseURL + "?query=" + query + "&fmt=json&limit=1"
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -43,7 +43,7 @@ func ExtractMetadata(name string) (*Metadata, error) {
 	}
 	req.Header.Set("User-Agent", "yamp/0.1")
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -51,6 +51,10 @@ func ExtractMetadata(name string) (*Metadata, error) {
 	defer func() {
 		_ = resp.Body.Close()
 	}()
+
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("unexpected response status: %s", resp.Status)
+	}
 
 	var result MusicbrainzResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
@@ -75,11 +79,11 @@ func ExtractMetadata(name string) (*Metadata, error) {
 }
 
 func GetSimilarSongs(name string) (*ytdlp.Result, error) {
-	ytdlp.MustInstall(context.TODO(), nil)
-	ytdlp.MustInstallBun(context.TODO(), nil)
-	ytdlp.MustInstallFFmpeg(context.TODO(), nil)
+	ytdlpInstall()
+	ytdlpInstallBun()
+	ytdlpInstallFFmpeg()
 
-	result, err := ytdlp.New().Print("id").Run(context.TODO(), "ytsearch1:"+name)
+	result, err := ytdlpSearchID(name)
 	if err != nil {
 		return nil, fmt.Errorf("could not search for song %s: %w", name, err)
 	}
@@ -89,10 +93,30 @@ func GetSimilarSongs(name string) (*ytdlp.Result, error) {
 	}
 
 	url := fmt.Sprintf("https://www.youtube.com/watch?v=%s&list=RD%s", id, id)
-	songs, err := ytdlp.New().GetTitle().FlatPlaylist().PlaylistItems("2-11").Run(context.TODO(), url)
+	songs, err := ytdlpGetSimilar(url)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch similar songs for %s: %w", name, err)
 	}
 
 	return songs, nil
 }
+
+var (
+	musicbrainzBaseURL = "https://musicbrainz.org/ws/2/recording/"
+	httpClient         = http.DefaultClient
+	ytdlpInstall = func() {
+		ytdlp.MustInstall(context.TODO(), nil)
+	}
+	ytdlpInstallBun = func() {
+		ytdlp.MustInstallBun(context.TODO(), nil)
+	}
+	ytdlpInstallFFmpeg = func() {
+		ytdlp.MustInstallFFmpeg(context.TODO(), nil)
+	}
+	ytdlpSearchID = func(name string) (*ytdlp.Result, error) {
+		return ytdlp.New().Print("id").Run(context.TODO(), "ytsearch1:"+name)
+	}
+	ytdlpGetSimilar = func(url string) (*ytdlp.Result, error) {
+		return ytdlp.New().GetTitle().FlatPlaylist().PlaylistItems("2-11").Run(context.TODO(), url)
+	}
+)

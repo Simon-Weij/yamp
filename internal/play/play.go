@@ -10,22 +10,6 @@ import (
 	"github.com/lrstanley/go-ytdlp"
 )
 
-
-var (
-	ytdlpInstall = func() {
-		ytdlp.MustInstall(context.TODO(), nil)
-	}
-	ytdlpInstallFFmpeg = func() {
-		ytdlp.MustInstallFFmpeg(context.TODO(), nil)
-	}
-	ytdlpDownload = func(name, output string) (*ytdlp.Result, error) {
-		dl := ytdlp.New().ExtractAudio().AudioFormat("mp3").Verbose().ParseMetadata("title:%(artist)s - %(title)s").EmbedMetadata().Output(filepath.Join(output))
-		return dl.Run(context.TODO(), "ytsearch1:"+name)
-	}
-	execCommand = exec.Command
-)
-
-
 func DownloadSong(name string, output string) error {
 	info, err := os.Stat(output)
 	if err == nil {
@@ -62,3 +46,17 @@ func PlaySong(path string) error {
 	}
 	return nil
 }
+
+var (
+	ytdlpInstall = func() {
+		ytdlp.MustInstall(context.TODO(), nil)
+	}
+	ytdlpInstallFFmpeg = func() {
+		ytdlp.MustInstallFFmpeg(context.TODO(), nil)
+	}
+	ytdlpDownload = func(name, output string) (*ytdlp.Result, error) {
+		dl := ytdlp.New().ExtractAudio().AudioFormat("mp3").Verbose().ParseMetadata("title:%(artist)s - %(title)s").EmbedMetadata().Output(filepath.Join(output))
+		return dl.Run(context.TODO(), "ytsearch1:"+name)
+	}
+	execCommand = exec.Command
+)
