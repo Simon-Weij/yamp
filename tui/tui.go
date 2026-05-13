@@ -5,12 +5,21 @@ import (
 	"os"
 
 	tea "charm.land/bubbletea/v2"
+	"yamp/tui/components"
+)
+
+type page int
+
+const (
+	homePage     page = iota
+	playlistPage page = iota
 )
 
 type model struct {
-	choices []string
-	cursor  int
-	chosen  string
+	currentPage page
+	choices     []string
+	cursor      int
+	chosen      string
 }
 
 func initialModel() model {
@@ -40,6 +49,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			m.chosen = m.choices[m.cursor]
 			return m, tea.Quit
+		case "escape":
+			m.currentPage = homePage
 		}
 	}
 
@@ -47,17 +58,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() tea.View {
-	s := "Where would you like to go?\n\n"
-	for i, choice := range m.choices {
-		cursor := " "
-		if m.cursor == i {
-			cursor = ">"
-		}
-		s += fmt.Sprintf("%s %s\n", cursor, choice)
+	var s string
+	switch m.currentPage {
+	case homePage:
+		s = components.HomeView(m.choices, m.cursor)
+	case playlistPage:
+		s = "playlist page"
 	}
-
-	s += "\nPress enter to select. Press q to quit.\n"
-	return tea.NewView(s)
+	v := tea.NewView(s)
+	v.AltScreen = true
+	return v
 }
 
 func RunTUI() {
