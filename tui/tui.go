@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"fmt"
 	"os"
 
 	tea "charm.land/bubbletea/v2"
@@ -11,15 +10,15 @@ import (
 type page int
 
 const (
-	homePage     page = iota
-	playlistPage page = iota
+	homePage          page = iota
+	playlistPage      page = iota
+	anotherOptionPage page = iota
 )
 
 type model struct {
 	currentPage page
 	choices     []string
 	cursor      int
-	chosen      string
 }
 
 func initialModel() model {
@@ -47,10 +46,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor++
 			}
 		case "enter":
-			m.chosen = m.choices[m.cursor]
-			return m, tea.Quit
-		case "escape":
+			if m.currentPage == homePage {
+				switch m.choices[m.cursor] {
+				case "playlists":
+					m.currentPage = playlistPage
+				case "another option":
+					m.currentPage = anotherOptionPage
+				}
+				m.cursor = 0
+			}
+		case "esc":
 			m.currentPage = homePage
+			m.cursor = 0
 		}
 	}
 
@@ -63,7 +70,9 @@ func (m model) View() tea.View {
 	case homePage:
 		s = components.HomeView(m.choices, m.cursor)
 	case playlistPage:
-		s = "playlist page"
+		s = components.PlaylistView()
+	case anotherOptionPage:
+		s = components.AnotherOptionView()
 	}
 	v := tea.NewView(s)
 	v.AltScreen = true
@@ -72,12 +81,8 @@ func (m model) View() tea.View {
 
 func RunTUI() {
 	p := tea.NewProgram(initialModel())
-	m, err := p.Run()
+	_, err := p.Run()
 	if err != nil {
-		fmt.Printf("There's been an error: %v", err)
 		os.Exit(1)
-	}
-	if m, ok := m.(model); ok && m.chosen != "" {
-		fmt.Println(m.chosen)
 	}
 }
