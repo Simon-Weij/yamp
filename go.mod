@@ -3,6 +3,7 @@ module yamp
 go 1.26.2
 
 require (
+	charm.land/bubbletea/v2 v2.0.6
 	github.com/adrg/xdg v0.5.3
 	github.com/google/uuid v1.6.0
 	github.com/lrstanley/go-ytdlp v1.3.5
@@ -12,7 +13,6 @@ require (
 )
 
 require (
-	charm.land/bubbletea/v2 v2.0.6 // indirect
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20260511121909-c840852527f3 // indirect
