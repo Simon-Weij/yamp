@@ -1,0 +1,21 @@
+{
+  "name": "tui",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "bun build ./src/index.tsx --outfile ./dist/app.js --target bun"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.2.14"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "ink": "^7.0.3",
+    "react": "^19.2.6",
+    "react-devtools-core": "^6.1.2"
+  }
+}
