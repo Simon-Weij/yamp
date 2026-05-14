@@ -4,7 +4,6 @@ import (
 	"os"
 	"os/exec"
 	playlistcmd "yamp/cmd/playlist"
-	"yamp/tui"
 
 	"github.com/spf13/cobra"
 )
