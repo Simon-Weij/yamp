@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	playlistcmd "yamp/cmd/playlist"
 	"yamp/tui"
@@ -12,8 +13,12 @@ var rootCmd = &cobra.Command{
 	Use:          "yamp",
 	Short:        "Yet another music player",
 	SilenceUsage: true,
-	Run: func(cmd *cobra.Command, args []string) {
-		tui.RunTUI()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		err := tui.RunTUI()
+		if err != nil {
+			return fmt.Errorf("could not run tui %w", err)
+		}
+		return nil
 	},
 }
 
