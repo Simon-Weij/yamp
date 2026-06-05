@@ -1,0 +1,62 @@
+{
+  "nodes": {
+    "flakelight": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1779722240,
+        "narHash": "sha256-cX1d9V5JHTytsSdH8RrgyU4fFdm4oooRuKBcJuiyI4U=",
+        "owner": "nix-community",
+        "repo": "flakelight",
+        "rev": "6908ac68dd682d1cb22fdb9391b890798f083a48",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "flakelight",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1779560665,
+        "narHash": "sha256-tpyBcxPpcQb8ukyNF7DoCwfSY3VPsxHoYwj00Cayv5o=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "64c08a7ca051951c8eae34e3e3cb1e202fe36786",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1780681757,
+        "narHash": "sha256-/ewcDo6715WWV7a/u8Db2PliGhy91lO9JXUwHnTNINE=",
+        "owner": "Simon-Weij",
+        "repo": "nixpkgs",
+        "rev": "203708fec05192f3872e2982ad2bd83d356431d0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Simon-Weij",
+        "ref": "wails3",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "flakelight": "flakelight",
+        "nixpkgs": "nixpkgs_2"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
