@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/spf13/afero"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -38,7 +39,9 @@ func main() {
 		Name:        "yamp",
 		Description: "A demo of using raw HTML & CSS",
 		Services: []application.Service{
-			application.NewService(&ThemeService{}),
+			application.NewService(&ThemeService{
+				Fs: afero.NewOsFs(),
+			}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
