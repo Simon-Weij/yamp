@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@import '@fontsource-variable/inter/wght.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *))
