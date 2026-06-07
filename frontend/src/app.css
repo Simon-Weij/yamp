@@ -1,6 +1,21 @@
 @import "tailwindcss";
-
 @import '@fontsource-variable/inter/wght.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
-@custom-variant light (&:where(.light, .light *))
+@custom-variant light (&:where(.light, .light *));
+
+@theme {
+        --color-bg: #121212;
+        --color-text: #F5F5F5;
+        --color-nav-bg: #1A1A1A;
+        --color-nav-text: #F5F5F5;
+        --color-button-nav-hover: #2E2E2E;
+}
+
+:root.light {
+        --color-bg: #EDEDED;
+        --color-text: #2B2B2B;
+        --color-nav-bg: #D8D8D8;
+        --color-nav-text: #2B2B2B;
+        --color-button-nav-hover: #C8C8C8;
+}

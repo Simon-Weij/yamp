@@ -1,0 +1,16 @@
+<script lang="ts">
+  const playlists = [
+    "Playlist 1",
+    "Playlist 2",
+    "Playlist 3",
+    "Playlist 4",
+  ];
+</script>
+
+<nav class="w-[240px] bg-nav-bg text-nav-text h-full">
+    <div class="ml-5 mt-5 mr-5">
+      {#each playlists as playlist}
+        <button class="cursor-pointer hover:bg-button-nav-hover w-full px-4 py-2 text-left rounded">{playlist}</button>
+      {/each}
+  </div>
+</nav>
