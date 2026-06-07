@@ -42,6 +42,9 @@ func main() {
 			application.NewService(&ThemeService{
 				Fs: afero.NewOsFs(),
 			}),
+			application.NewService(&PlaylistRepository{
+				Fs: afero.NewOsFs(),
+			}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
