@@ -13,7 +13,7 @@
   });
 </script>
 
-<main class="font-inter h-screen flex bg-bg text-text">
+<main class="flex h-screen font-inter bg-bg text-text">
   <Navbar />
   <div class="flex-1">
     {@render children()}

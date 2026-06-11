@@ -31,6 +31,10 @@ jobs:
       - run: go mod tidy && git diff --exit-code go.mod go.sum
       - run: go vet ./...
       - run: go test ./...
+      - run: cd frontend && pnpm install --frozen-lockfile
+      - run: cd frontend && pnpm format:check
+      - run: cd frontend && pnpm check
+      - run: cd frontend && pnpm lint
 
       - uses: golangci/golangci-lint-action@v9
         with:
