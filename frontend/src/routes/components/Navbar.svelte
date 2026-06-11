@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { ListPlaylists } from "../../../bindings/yamp/playlistrepository";
+    import { goto } from "$app/navigation";
 
   let playlists: string[] = [];
 
@@ -14,6 +15,9 @@
     {#each playlists as playlist}
       <button
         class="cursor-pointer hover:bg-button-nav-hover w-full px-4 py-2 text-left rounded"
+        onclick={() => {
+          goto("/playlists/" + playlist)
+        }}
       >
         {playlist}
       </button>
