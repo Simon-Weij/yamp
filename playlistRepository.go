@@ -106,12 +106,19 @@ func (pr *PlaylistRepository) addSongToPlaylist(playlistLocation string, playlis
 }
 
 func (pr *PlaylistRepository) ParsePlaylistFile(name string) (*[]PlaylistItem, error) {
-	path := filepath.Join(xdg.UserDirs.Music, "playlists", name+".m3u")
+	var path string
+	if filepath.IsAbs(name) || strings.HasSuffix(name, ".m3u") {
+		path = name
+	} else {
+		path = filepath.Join(xdg.UserDirs.Music, "playlists", name+".m3u")
+	}
+
 	file, err := pr.Fs.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("could not open file %w", err)
 	}
 	defer file.Close()
+
 	re := regexp.MustCompile(`:-?\d+,`)
 
 	var playlistItems []PlaylistItem
