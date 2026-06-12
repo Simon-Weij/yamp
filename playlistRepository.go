@@ -105,7 +105,8 @@ func (pr *PlaylistRepository) addSongToPlaylist(playlistLocation string, playlis
 	return nil
 }
 
-func (pr *PlaylistRepository) parsePlaylistFile(path string) (*[]PlaylistItem, error) {
+func (pr *PlaylistRepository) ParsePlaylistFile(name string) (*[]PlaylistItem, error) {
+	path := filepath.Join(xdg.UserDirs.Music, "playlists", name+".m3u")
 	file, err := pr.Fs.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("could not open file %w", err)

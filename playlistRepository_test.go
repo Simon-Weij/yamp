@@ -180,7 +180,7 @@ func Test_addSongToPlaylist(t *testing.T) {
 	}
 }
 
-func Test_parsePlaylistFile(t *testing.T) {
+func Test_ParsePlaylistFile(t *testing.T) {
 	type fields struct {
 		Fs afero.Fs
 	}
@@ -215,7 +215,7 @@ func Test_parsePlaylistFile(t *testing.T) {
 				err := pr.addSongToPlaylist(path, v, tt.songLocation)
 				require.NoError(t, err)
 			}
-			playlistItems, err := pr.parsePlaylistFile(path)
+			playlistItems, err := pr.ParsePlaylistFile(path)
 			if tt.wantErr {
 				require.Error(t, err)
 			} else {

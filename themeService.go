@@ -18,6 +18,12 @@ type ThemeService struct {
 	Fs afero.Fs
 }
 
+func NewThemeService(fs afero.Fs) *ThemeService {
+	return &ThemeService{
+		Fs: fs,
+	}
+}
+
 func (t *ThemeService) Theme() string {
 	theme, err := t.loadTheme()
 	if err != nil {

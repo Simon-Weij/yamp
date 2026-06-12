@@ -29,6 +29,7 @@ func init() {
 // and starts a goroutine that emits a time-based event every second. It subsequently runs the application and
 // logs any error that might occur.
 func main() {
+	fs := afero.NewOsFs()
 
 	// Create a new Wails application by providing the necessary options.
 	// Variables 'Name' and 'Description' are for application metadata.
@@ -39,12 +40,8 @@ func main() {
 		Name:        "yamp",
 		Description: "A demo of using raw HTML & CSS",
 		Services: []application.Service{
-			application.NewService(&ThemeService{
-				Fs: afero.NewOsFs(),
-			}),
-			application.NewService(&PlaylistRepository{
-				Fs: afero.NewOsFs(),
-			}),
+			application.NewService(NewThemeService(fs)),
+			application.NewService(NewPlaylistRepository(fs)),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
