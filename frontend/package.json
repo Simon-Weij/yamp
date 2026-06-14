@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
+    "@lucide/svelte": "^1.3.0",
     "@tailwindcss/vite": "^4.3.0",
     "@wailsio/runtime": "latest",
     "tailwindcss": "^4.3.0"

@@ -2,6 +2,9 @@
   import { page } from "$app/state";
   import { PlaylistItem } from "../../../../bindings/yamp/models";
   import { ParsePlaylistFile } from "../../../../bindings/yamp/playlistrepository";
+  import { Plus } from "@lucide/svelte";
+  import Modal from "../../components/Modal.svelte";
+  let open = $state(false);
 
   let slug = $derived(page.params.slug);
 
@@ -30,5 +33,26 @@
         </div>
       </section>
     {/each}
+    <button
+      class="cursor-pointer flex flex-row items-center rounded-lg p-4 hover:bg-button-nav-hover font-bold"
+      onclick={() => (open = true)}
+    >
+      <Plus /> Add song
+    </button>
   </div>
+  {#if open}
+    <div
+      class="fixed inset-0 z-40 bg-modal-overlay"
+      role="presentation"
+      onclick={() => (open = false)}
+    >
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center"
+        role="dialog"
+        aria-modal="true"
+      >
+        <Modal />
+      </div>
+    </div>
+  {/if}
 </main>
