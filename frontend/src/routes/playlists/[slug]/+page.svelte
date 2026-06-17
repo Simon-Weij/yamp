@@ -10,12 +10,13 @@
 
   let playlists: PlaylistItem[] = $state([]);
 
-  $effect(() => {
-    const fetchPlaylists = async () => {
-      const data = await ParsePlaylistFile(slug ?? "");
-      playlists = data || [];
-    };
+  async function fetchPlaylists() {
+    const currentSlug = slug;
+    const data = await ParsePlaylistFile(currentSlug ?? "");
+    playlists = data || [];
+  }
 
+  $effect(() => {
     fetchPlaylists();
   });
 </script>
@@ -51,7 +52,11 @@
         role="dialog"
         aria-modal="true"
       >
-        <Modal />
+        <Modal
+          playlist={slug ?? ""}
+          onclose={() => (open = false)}
+          onsongadded={fetchPlaylists}
+        />
       </div>
     </div>
   {/if}

@@ -7,8 +7,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/adrg/xdg"
 )
 
 type BrowserRepository struct {
@@ -26,6 +30,7 @@ type Song struct {
 	Artist         string `json:"artistName"`
 	CollectionName string `json:"collectionName"`
 	Cover          string `json:"artworkUrl100"`
+	DurationMillis int    `json:"trackTimeMillis"`
 }
 
 type searchResponse struct {
@@ -61,6 +66,29 @@ func (br *BrowserRepository) SearchSong(ctx context.Context, query string) ([]So
 	}
 
 	return body.Results, nil
+}
+
+func (br *BrowserRepository) AddSongToPlaylist(song Song, playlist string) error {
+	playlistLocation := filepath.Join(xdg.UserDirs.Music, "playlists", playlist+".m3u")
+	songLocation := filepath.Join(xdg.UserDirs.Music + song.TrackName)
+	file, err := os.OpenFile(playlistLocation, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return fmt.Errorf("could not open playlist: %w", err)
+	}
+	defer file.Close()
+
+	entry := fmt.Sprintf("#EXTINF:%d,%s - %s - %s\n%s\n",
+		song.DurationMillis,
+		song.Artist,
+		song.CollectionName,
+		song.TrackName,
+		songLocation,
+	)
+
+	if _, err := file.WriteString(entry); err != nil {
+		return fmt.Errorf("could not write to file: %w", err)
+	}
+	return nil
 }
 
 // This exists because webkitgtk can't behave and throws tls errors when you interact with network
