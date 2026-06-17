@@ -75,7 +75,7 @@ func (br *BrowserRepository) SearchSong(ctx context.Context, query string) ([]So
 
 func (br *BrowserRepository) AddSongToPlaylist(song Song, playlist string) error {
 	playlistLocation := filepath.Join(xdg.UserDirs.Music, "playlists", playlist+".m3u")
-	songLocation := filepath.Join(xdg.UserDirs.Music + song.TrackName)
+	songLocation := filepath.Join(xdg.UserDirs.Music, song.TrackName)
 	file, err := os.OpenFile(playlistLocation, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		return fmt.Errorf("could not open playlist: %w", err)
@@ -94,6 +94,28 @@ func (br *BrowserRepository) AddSongToPlaylist(song Song, playlist string) error
 		return fmt.Errorf("could not write to file: %w", err)
 	}
 	return nil
+}
+
+func (br *BrowserRepository) RemoveSongFromPlaylist(title, album, artist, playlist string) error {
+	playlistLocation := filepath.Join(xdg.UserDirs.Music, "playlists", playlist+".m3u")
+
+	data, err := os.ReadFile(playlistLocation)
+	if err != nil {
+		return fmt.Errorf("could not read playlist: %w", err)
+	}
+
+	lines := strings.Split(string(data), "\n")
+	out := make([]string, 0, len(lines))
+
+	for i := 0; i < len(lines); i++ {
+		if strings.Contains(lines[i], artist+" - "+album+" - "+title) {
+			i++
+			continue
+		}
+		out = append(out, lines[i])
+	}
+
+	return os.WriteFile(playlistLocation, []byte(strings.Join(out, "\n")), 0644)
 }
 
 // This exists because webkitgtk can't behave and throws tls errors when you interact with network

@@ -1,7 +1,6 @@
 package main
 
 // TODO: tests
-
 import (
 	"encoding/base64"
 	"encoding/json"
