@@ -2,7 +2,8 @@ package main
 
 // TODO: tests
 import (
-	"encoding/base64"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -29,6 +30,33 @@ type MusicService struct{}
 
 func NewMusicService() *MusicService {
 	return &MusicService{}
+}
+
+func albumCoverCacheDir() (string, error) {
+	cacheBase, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(cacheBase, "yamp"), nil
+}
+
+func albumCoverCacheKey(artist, album string) string {
+	sum := sha1.Sum([]byte(artist + "\x00" + album))
+	return hex.EncodeToString(sum[:])
+}
+
+func albumCoverCachePath(artist, album string) (string, error) {
+	coverDir, err := albumCoverCacheDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(coverDir, albumCoverCacheKey(artist, album)), nil
+}
+
+func albumCoverURL(artist, album string) string {
+	return "/covers/" + albumCoverCacheKey(artist, album)
 }
 
 func (ms *MusicService) fetchReleaseGroups(artist, album string) ([]struct {
@@ -76,18 +104,20 @@ func (ms *MusicService) fetchAlbumID(artist, album string) (string, error) {
 }
 
 func (ms *MusicService) GetAlbumCover(artist, album string) (string, error) {
-	cacheBase, err := os.UserCacheDir()
+	coverDir, err := albumCoverCacheDir()
 	if err != nil {
 		return "", err
 	}
 
-	coverDir := filepath.Join(cacheBase, "yamp")
 	if err := os.MkdirAll(coverDir, 0755); err != nil {
 		return "", err
 	}
 
-	cacheName := artist + " - " + album
-	exactPath := filepath.Join(coverDir, cacheName)
+	exactPath, err := albumCoverCachePath(artist, album)
+	if err != nil {
+		return "", err
+	}
+
 	if _, err := os.Stat(exactPath); err == nil {
 		return exactPath, nil
 	}
@@ -102,31 +132,27 @@ func (ms *MusicService) GetAlbumCover(artist, album string) (string, error) {
 		return "", err
 	}
 
-	destPath := filepath.Join(coverDir, cacheName)
-	if err := ms.downloadAlbumCover(destPath, id); err != nil {
+	if err := ms.downloadAlbumCover(exactPath, id); err != nil {
 		return "", err
 	}
-	return destPath, nil
+	return exactPath, nil
 }
 
-func (ms *MusicService) GetAlbumCoverBase64(artist, album string) (string, error) {
+func (ms *MusicService) GetAlbumCoverURL(artist, album string) (string, error) {
+	if _, err := ms.GetAlbumCover(artist, album); err != nil {
+		return "", err
+	}
+
+	return albumCoverURL(artist, album), nil
+}
+
+func (ms *MusicService) GetAlbumCoverPath(artist, album string) (string, error) {
 	path, err := ms.GetAlbumCover(artist, album)
 	if err != nil {
 		return "", err
 	}
 
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-
-	mime := http.DetectContentType(data)
-	if mime == "application/octet-stream" {
-		mime = "image/jpeg"
-	}
-
-	b64 := base64.StdEncoding.EncodeToString(data)
-	return fmt.Sprintf("data:%s;base64,%s", mime, b64), nil
+	return path, nil
 }
 
 func (ms *MusicService) downloadAlbumCover(location, albumID string) error {
