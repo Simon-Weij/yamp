@@ -13,15 +13,20 @@ import (
 	"time"
 
 	"github.com/adrg/xdg"
+	"github.com/spf13/afero"
 )
 
 type BrowserRepository struct {
-	baseURL string
+	baseURL    string
+	httpClient *http.Client
+	Fs         afero.Fs
 }
 
-func NewBrowserRepository() *BrowserRepository {
+func NewBrowserRepository(fs afero.Fs) *BrowserRepository {
 	return &BrowserRepository{
-		baseURL: "https://itunes.apple.com",
+		baseURL:    "https://itunes.apple.com",
+		httpClient: &http.Client{Timeout: 10 * time.Second},
+		Fs:         fs,
 	}
 }
 
