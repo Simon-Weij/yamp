@@ -17,7 +17,7 @@
   });
 </script>
 
-<!--<svelte:window on:contextmenu={disableContextMenu} />-->
+<svelte:window on:contextmenu={disableContextMenu} />
 
 <main class="flex h-screen font-inter bg-bg text-text">
   <Navbar />
