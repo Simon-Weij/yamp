@@ -3,7 +3,6 @@
   import { ListPlaylists } from "../../../bindings/yamp/playlistrepository";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
-
   let playlists: string[] = [];
 
   onMount(async () => {

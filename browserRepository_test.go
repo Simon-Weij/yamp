@@ -48,7 +48,6 @@ func TestBrowserRepository_SearchSong(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 				w.WriteHeader(tt.httpStatusCode)
 				json.NewEncoder(w).Encode(searchResponse{Results: tt.songs})
 			}))
