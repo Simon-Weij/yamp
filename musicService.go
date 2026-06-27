@@ -32,32 +32,7 @@ func NewMusicService() *MusicService {
 	return &MusicService{}
 }
 
-func albumCoverCacheDir() (string, error) {
-	cacheBase, err := os.UserCacheDir()
-	if err != nil {
-		return "", err
-	}
 
-	return filepath.Join(cacheBase, "yamp"), nil
-}
-
-func albumCoverCacheKey(artist, album string) string {
-	sum := sha1.Sum([]byte(artist + "\x00" + album))
-	return hex.EncodeToString(sum[:])
-}
-
-func albumCoverCachePath(artist, album string) (string, error) {
-	coverDir, err := albumCoverCacheDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.Join(coverDir, albumCoverCacheKey(artist, album)), nil
-}
-
-func albumCoverURL(artist, album string) string {
-	return "/covers/" + albumCoverCacheKey(artist, album)
-}
 
 func (ms *MusicService) fetchReleaseGroups(artist, album string) ([]struct {
 	ID string `json:"id"`
@@ -104,19 +79,19 @@ func (ms *MusicService) fetchAlbumID(artist, album string) (string, error) {
 }
 
 func (ms *MusicService) GetAlbumCover(artist, album string) (string, error) {
-	coverDir, err := albumCoverCacheDir()
+	cacheBase, err := os.UserCacheDir()
 	if err != nil {
 		return "", err
 	}
+	coverDir := filepath.Join(cacheBase, "yamp")
 
 	if err := os.MkdirAll(coverDir, 0755); err != nil {
 		return "", err
 	}
 
-	exactPath, err := albumCoverCachePath(artist, album)
-	if err != nil {
-		return "", err
-	}
+	sum := sha1.Sum([]byte(artist + "\x00" + album))
+	hash := hex.EncodeToString(sum[:])
+	exactPath := filepath.Join(coverDir, hash)
 
 	if _, err := os.Stat(exactPath); err == nil {
 		return exactPath, nil
@@ -138,13 +113,7 @@ func (ms *MusicService) GetAlbumCover(artist, album string) (string, error) {
 	return exactPath, nil
 }
 
-func (ms *MusicService) GetAlbumCoverURL(artist, album string) (string, error) {
-	if _, err := ms.GetAlbumCover(artist, album); err != nil {
-		return "", err
-	}
 
-	return albumCoverURL(artist, album), nil
-}
 
 func (ms *MusicService) GetAlbumCoverPath(artist, album string) (string, error) {
 	path, err := ms.GetAlbumCover(artist, album)

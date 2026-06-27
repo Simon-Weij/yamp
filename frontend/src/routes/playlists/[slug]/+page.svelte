@@ -3,7 +3,7 @@
   import { PlaylistItem } from "../../../../bindings/yamp/models";
   import { ParsePlaylistFile } from "../../../../bindings/yamp/playlistrepository";
   import { RemoveSongFromPlaylist } from "../../../../bindings/yamp/browserrepository";
-  import { GetAlbumCoverURL } from "../../../../bindings/yamp/musicservice";
+  import { GetAlbumCoverPath } from "../../../../bindings/yamp/musicservice";
   import { Plus, Trash2 } from "@lucide/svelte";
   import Modal from "../../components/Modal.svelte";
   let open = $state(false);
@@ -29,9 +29,9 @@
       <section
         class="cursor-pointer rounded-lg p-4 hover:bg-button-nav-hover flex items-center gap-4"
       >
-        {#await GetAlbumCoverURL(item.Artist, item.Album) then src}
+        {#await GetAlbumCoverPath(item.Artist, item.Album) then path}
           <img
-            {src}
+            src={path}
             alt="cover"
             class="w-16 h-16 object-cover rounded-md shrink-0"
             loading="lazy"

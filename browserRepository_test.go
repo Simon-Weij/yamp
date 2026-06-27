@@ -49,7 +49,7 @@ func TestBrowserRepository_SearchSong(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.httpStatusCode)
-				json.NewEncoder(w).Encode(searchResponse{Results: tt.songs})
+				_ = json.NewEncoder(w).Encode(searchResponse{Results: tt.songs})
 			}))
 			defer srv.Close()
 

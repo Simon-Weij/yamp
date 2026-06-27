@@ -2,12 +2,10 @@ package main
 
 import (
 	"embed"
-
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/spf13/afero"
@@ -27,37 +25,6 @@ func init() {
 	// This is not required, but the binding generator will pick up registered events
 	// and provide a strongly typed JS/TS API for them.
 	application.RegisterEvent[string]("time")
-}
-
-func coverAssetMiddleware() application.Middleware {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if !strings.HasPrefix(r.URL.Path, "/covers/") {
-				next.ServeHTTP(w, r)
-				return
-			}
-
-			coverDir, err := albumCoverCacheDir()
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			coverName := strings.TrimPrefix(r.URL.Path, "/covers/")
-			if coverName == "" || strings.Contains(coverName, "/") || strings.Contains(coverName, "\\") {
-				http.NotFound(w, r)
-				return
-			}
-
-			coverPath := filepath.Join(coverDir, coverName)
-			if _, err := os.Stat(coverPath); err != nil {
-				http.NotFound(w, r)
-				return
-			}
-
-			http.ServeFile(w, r, coverPath)
-		})
-	}
 }
 
 // main function serves as the application's entry point. It initializes the application, creates a window,
@@ -81,8 +48,13 @@ func main() {
 			application.NewService(NewMusicService()),
 		},
 		Assets: application.AssetOptions{
-			Handler:    application.AssetFileServerFS(assets),
-			Middleware: coverAssetMiddleware(),
+			Handler: application.AssetFileServerFS(assets),
+			Middleware: func(next http.Handler) http.Handler {
+				cacheBase, _ := os.UserCacheDir()
+				return NewFileLoader([]string{
+					filepath.Join(cacheBase, "yamp"),
+				}).Middleware(next)
+			},
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
@@ -117,7 +89,6 @@ func main() {
 
 	// Run the application. This blocks until the application has been exited.
 	err := app.Run()
-
 	// If an error occurred while running the application, log it and exit.
 	if err != nil {
 		log.Fatal(err)
