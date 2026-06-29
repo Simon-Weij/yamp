@@ -1,7 +1,8 @@
 package main
 
 import (
-	"bufio"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -20,36 +21,13 @@ type PlaylistItem struct {
 	Artist string
 	Album  string
 	Title  string
+	Cover  string
 }
 
 func NewPlaylistRepository(fs afero.Fs) *PlaylistRepository {
 	return &PlaylistRepository{
 		Fs: fs,
 	}
-}
-
-func (pr *PlaylistRepository) ListPlaylists() ([]string, error) {
-	dir := filepath.Join(xdg.UserDirs.Music, "playlists")
-
-	items, err := afero.ReadDir(pr.Fs, dir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return []string{}, nil
-		}
-		return nil, fmt.Errorf("could not read playlists directory: %w", err)
-	}
-
-	if len(items) == 0 {
-		return []string{}, nil
-	}
-
-	var names []string
-	for _, file := range items {
-		name := strings.TrimSuffix(file.Name(), ".m3u")
-		names = append(names, name)
-	}
-
-	return names, nil
 }
 
 func validateFilename(name string) error {
@@ -69,88 +47,135 @@ func validateFilename(name string) error {
 	return nil
 }
 
-func (pr *PlaylistRepository) createPlaylist(name string) (string, error) {
+func getPlaylistPath(name string) string {
+	return filepath.Join(xdg.DataHome, "yamp", "playlists", name+".json")
+}
+
+func getPlaylistDir() string {
+	return filepath.Join(xdg.DataHome, "yamp", "playlists")
+}
+
+func (pr *PlaylistRepository) CreatePlaylist(name string) (string, error) {
 	if err := validateFilename(name); err != nil {
 		return "", err
 	}
-	path := filepath.Join(xdg.UserDirs.Music, "playlists", name+".m3u")
+	path := getPlaylistPath(name)
 
 	if _, err := pr.Fs.Stat(path); err == nil {
 		return "", fmt.Errorf("file already exists")
 	}
-	data := []byte("#EXTM3U\n")
-	if err := afero.WriteFile(pr.Fs, path, data, 0644); err != nil {
-		return "", fmt.Errorf("could not write to playlist file: %w", err)
+
+	dir := filepath.Dir(path)
+	if err := pr.Fs.MkdirAll(dir, 0o755); err != nil {
+		return "", err
 	}
+
+	if err := afero.WriteFile(pr.Fs, path, []byte("[]"), 0o644); err != nil {
+		return "", err
+	}
+
 	return path, nil
 }
 
-func (pr *PlaylistRepository) addSongToPlaylist(playlistLocation string, playlistItem PlaylistItem, songLocation string) error {
-	file, err := pr.Fs.OpenFile(playlistLocation, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		return fmt.Errorf("could not open playlist: %w", err)
+func (pr *PlaylistRepository) getSongsInPlaylist(playlistName string) ([]Song, error) {
+	var songs []Song
+	path := getPlaylistPath(playlistName)
+	if _, err := pr.Fs.Stat(path); errors.Is(err, os.ErrNotExist) {
+		return nil, fmt.Errorf("%s does not exist", playlistName)
 	}
-	defer file.Close()
-
-	entry := fmt.Sprintf("#EXTINF:-1,%s - %s - %s\n%s\n",
-		playlistItem.Artist,
-		playlistItem.Album,
-		playlistItem.Title,
-		songLocation,
-	)
-
-	if _, err := file.WriteString(entry); err != nil {
-		return fmt.Errorf("could not write to file: %w", err)
+	data, err := afero.ReadFile(pr.Fs, path)
+	if err == nil && len(data) > 0 {
+		_ = json.Unmarshal(data, &songs)
 	}
-	return nil
+	return songs, nil
 }
 
-func (pr *PlaylistRepository) ParsePlaylistFile(name string) (*[]PlaylistItem, error) {
-	var path string
-	if filepath.IsAbs(name) || strings.HasSuffix(name, ".m3u") {
-		path = name
-	} else {
-		path = filepath.Join(xdg.UserDirs.Music, "playlists", name+".m3u")
+func (pr *PlaylistRepository) AddSongToPlaylist(song Song, playlistName string) error {
+	var songs []Song
+	path := getPlaylistPath(playlistName)
+	if _, err := pr.Fs.Stat(path); errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("%s does not exist", playlistName)
 	}
 
-	file, err := pr.Fs.Open(path)
+	data, err := afero.ReadFile(pr.Fs, path)
+	if err == nil && len(data) > 0 {
+		_ = json.Unmarshal(data, &songs)
+	}
+	songs = append(songs, song)
+
+	out, err := json.MarshalIndent(songs, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("could not open file %w", err)
+		return err
 	}
-	defer file.Close()
 
-	re := regexp.MustCompile(`:-?\d+,`)
+	dir := filepath.Dir(path)
+	if err := pr.Fs.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
 
+	return afero.WriteFile(pr.Fs, path, out, 0o644)
+}
+
+func (pr *PlaylistRepository) RemoveSongFromPlaylist(title, artist, playlistName string) error {
+	var songs []Song
+	path := getPlaylistPath(playlistName)
+	if _, err := pr.Fs.Stat(path); errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("%s does not exist", playlistName)
+	}
+
+	data, err := afero.ReadFile(pr.Fs, path)
+	if err == nil && len(data) > 0 {
+		_ = json.Unmarshal(data, &songs)
+	}
+
+	filtered := songs[:0]
+	for _, s := range songs {
+		if s.TrackName != title || s.Artist != artist {
+			filtered = append(filtered, s)
+		}
+	}
+
+	if len(filtered) == len(songs) {
+		return fmt.Errorf("song not found in %s", playlistName)
+	}
+
+	out, err := json.MarshalIndent(filtered, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return afero.WriteFile(pr.Fs, path, out, 0o644)
+}
+
+func (pr *PlaylistRepository) ListSongsInPlaylist(playlistName string) ([]PlaylistItem, error) {
+	songs, err := pr.getSongsInPlaylist(playlistName)
+	if err != nil {
+		return nil, err
+	}
 	var playlistItems []PlaylistItem
+	for _, song := range songs {
+		playlistItems = append(playlistItems, PlaylistItem{
+			Artist: song.Artist,
+			Album:  song.CollectionName,
+			Title:  song.TrackName,
+			Cover:  song.Cover,
+		})
+	}
+	return playlistItems, nil
+}
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		expectedPrefix := "#EXTINF"
-		if !strings.HasPrefix(line, expectedPrefix) {
-			continue
-		}
-
-		line = strings.TrimPrefix(line, expectedPrefix)
-		line = re.ReplaceAllString(line, "")
-
-		parts := strings.Split(line, " - ")
-
-		if len(parts) != 3 {
-			return nil, fmt.Errorf("unexpected format")
-		}
-
-		playlistItem := PlaylistItem{
-			Artist: strings.TrimSpace(parts[0]),
-			Album:  strings.TrimSpace(parts[1]),
-			Title:  strings.TrimSpace(parts[2]),
-		}
-
-		playlistItems = append(playlistItems, playlistItem)
+func (pr *PlaylistRepository) ListPlaylists() []string {
+	dir := getPlaylistDir()
+	entries, err := afero.ReadDir(pr.Fs, dir)
+	if err != nil {
+		return []string{}
 	}
 
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error reading file: %w", err)
+	var playlists []string
+	for _, entry := range entries {
+		if strings.HasSuffix(entry.Name(), ".json") {
+			playlists = append(playlists, strings.TrimSuffix(entry.Name(), ".json"))
+		}
 	}
-	return &playlistItems, nil
+	return playlists
 }

@@ -33,16 +33,36 @@ func TestThemeService_loadTheme(t *testing.T) {
 		wantErr bool
 		setup   func(ts *ThemeService) error
 	}{
-		{"by default, it should return dark", "dark", false, func(ts *ThemeService) error { return nil }},
-		{"if the theme is light, it should return light", "light", false, func(ts *ThemeService) error {
-			return writeTestConfig(ts, "light")
-		}},
-		{"if the theme is empty, return dark", "dark", false, func(ts *ThemeService) error {
-			return writeTestConfig(ts, "")
-		}},
-		{"if the theme is invalid, return dark", "dark", false, func(ts *ThemeService) error {
-			return writeTestConfig(ts, "invalidTheme")
-		}},
+		{
+			name:    "by default, it should return dark",
+			want:    "dark",
+			wantErr: false,
+			setup:   func(ts *ThemeService) error { return nil },
+		},
+		{
+			name:    "if the theme is light, it should return light",
+			want:    "light",
+			wantErr: false,
+			setup: func(ts *ThemeService) error {
+				return writeTestConfig(ts, "light")
+			},
+		},
+		{
+			name:    "if the theme is empty, return dark",
+			want:    "dark",
+			wantErr: false,
+			setup: func(ts *ThemeService) error {
+				return writeTestConfig(ts, "")
+			},
+		},
+		{
+			name:    "if the theme is invalid, return dark",
+			want:    "dark",
+			wantErr: false,
+			setup: func(ts *ThemeService) error {
+				return writeTestConfig(ts, "invalidTheme")
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

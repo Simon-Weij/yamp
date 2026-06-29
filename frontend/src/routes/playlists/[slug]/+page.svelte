@@ -1,11 +1,12 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { PlaylistItem } from "../../../../bindings/yamp/models";
-  import { ParsePlaylistFile } from "../../../../bindings/yamp/playlistrepository";
-  import { RemoveSongFromPlaylist } from "../../../../bindings/yamp/browserrepository";
-  import { GetAlbumCoverPath } from "../../../../bindings/yamp/musicservice";
   import { Plus, Trash2 } from "@lucide/svelte";
   import Modal from "../../components/Modal.svelte";
+  import {
+    ListSongsInPlaylist,
+    RemoveSongFromPlaylist,
+  } from "../../../../bindings/yamp/playlistrepository";
+  import type { PlaylistItem } from "../../../../bindings/yamp/models";
   let open = $state(false);
 
   let slug = $derived(page.params.slug);
@@ -14,7 +15,7 @@
 
   async function fetchPlaylists() {
     const currentSlug = slug;
-    const data = await ParsePlaylistFile(currentSlug ?? "");
+    const data = await ListSongsInPlaylist(currentSlug ?? "");
     playlists = data || [];
   }
 
@@ -29,14 +30,12 @@
       <section
         class="cursor-pointer rounded-lg p-4 hover:bg-button-nav-hover flex items-center gap-4"
       >
-        {#await GetAlbumCoverPath(item.Artist, item.Album) then path}
-          <img
-            src={path}
-            alt="cover"
-            class="w-16 h-16 object-cover rounded-md shrink-0"
-            loading="lazy"
-          />
-        {/await}
+        <img
+          src={item.Cover}
+          alt="cover"
+          class="w-16 h-16 object-cover rounded-md shrink-0"
+          loading="lazy"
+        />
         <div class="flex flex-col min-w-0 flex-1">
           <div class="font-semibold truncate">{i + 1}. {item.Title}</div>
           <div class="text-sm opacity-80 mt-1 truncate">
@@ -47,12 +46,7 @@
           class="shrink-0 p-1.5 rounded-md opacity-40 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
           onclick={async (e) => {
             e.stopPropagation();
-            await RemoveSongFromPlaylist(
-              item.Title,
-              item.Album,
-              item.Artist,
-              slug ?? "",
-            );
+            await RemoveSongFromPlaylist(item.Title, item.Artist, slug ?? "");
             await fetchPlaylists();
           }}
           aria-label="Remove"

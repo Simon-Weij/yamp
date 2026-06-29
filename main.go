@@ -45,7 +45,6 @@ func main() {
 			application.NewService(NewThemeService(fs)),
 			application.NewService(NewPlaylistRepository(fs)),
 			application.NewService(NewBrowserRepository(fs)),
-			application.NewService(NewMusicService()),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),

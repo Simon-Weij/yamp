@@ -30,19 +30,39 @@ func TestBrowserRepository_SearchSong(t *testing.T) {
 		songs          []Song
 		httpStatusCode int
 	}{
-		{"should return without errors", args{
-			context.Background(),
-			"query",
-		}, songs, false, songs, 200,
+		{
+			name: "should return without errors",
+			args: args{
+				ctx:   context.Background(),
+				query: "query",
+			},
+			want:           songs,
+			wantErr:        false,
+			songs:          songs,
+			httpStatusCode: 200,
 		},
-		{"should return error when no results", args{
-			context.Background(),
-			"query",
-		}, nil, true, []Song{}, 200},
-		{"should return error when server errors", args{
-			context.Background(),
-			"query",
-		}, nil, true, songs, 500},
+		{
+			name: "should return error when no results",
+			args: args{
+				ctx:   context.Background(),
+				query: "query",
+			},
+			want:           nil,
+			wantErr:        true,
+			songs:          []Song{},
+			httpStatusCode: 200,
+		},
+		{
+			name: "should return error when server errors",
+			args: args{
+				ctx:   context.Background(),
+				query: "query",
+			},
+			want:           nil,
+			wantErr:        true,
+			songs:          songs,
+			httpStatusCode: 500,
+		},
 	}
 
 	for _, tt := range tests {

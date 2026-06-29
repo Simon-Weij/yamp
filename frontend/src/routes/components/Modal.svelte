@@ -1,10 +1,7 @@
 <script lang="ts">
-  import {
-    SearchSong,
-    FetchImageAsBase64,
-    AddSongToPlaylist,
-  } from "../../../bindings/yamp/browserrepository";
+  import { SearchSong } from "../../../bindings/yamp/browserrepository";
   import { Song } from "../../../bindings/yamp/models";
+  import { AddSongToPlaylist } from "../../../bindings/yamp/playlistrepository";
   export let onclose: () => void;
   export let onsongadded: () => void = () => {};
 
@@ -55,13 +52,11 @@
         class="flex flex-row items-center gap-3 hover:bg-bg py-2 px-3 rounded text-left w-full"
         onclick={() => addSongToPlaylist(song)}
       >
-        {#await FetchImageAsBase64(song.artworkUrl100) then src}
-          <img
-            {src}
-            alt={song.collectionName}
-            class="w-10 h-10 rounded shrink-0"
-          />
-        {/await}
+        <img
+          src={song.artworkUrl100}
+          alt={song.collectionName}
+          class="w-10 h-10 rounded shrink-0"
+        />
         <div class="flex flex-col flex-1 min-w-0">
           <span class="font-medium truncate">{song.trackName}</span>
           <span class="text-sm text-gray-400 truncate"
