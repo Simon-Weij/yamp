@@ -17,9 +17,42 @@ func TestBrowserRepository_SearchSong(t *testing.T) {
 	}
 
 	songs := []Song{
-		{TrackName: "Title 1", Artist: "Artist 1", CollectionName: "Album 1", Cover: "https://example.com"},
-		{TrackName: "Title 2", Artist: "Artist 2", CollectionName: "Album 2", Cover: "https://example.com"},
-		{TrackName: "Title 3", Artist: "Artist 3", CollectionName: "Album 3", Cover: "https://example.com"},
+		{
+			TrackName:      "Title 1",
+			Artist:         "Artist 1",
+			CollectionName: "Album 1",
+			Cover:          "https://example.com",
+			TrackID:        1,
+			ArtistID:       2,
+			CollectionID:   3,
+			DurationMillis: 4,
+			PreviewURL:     "https://example.com",
+			TrackURL:       "https://example.com",
+		},
+		{
+			TrackName:      "Title 2",
+			Artist:         "Artist 2",
+			CollectionName: "Album 2",
+			Cover:          "https://example.com",
+			TrackID:        1,
+			ArtistID:       2,
+			CollectionID:   3,
+			DurationMillis: 4,
+			PreviewURL:     "https://example.com",
+			TrackURL:       "https://example.com",
+		},
+		{
+			TrackName:      "Title 3",
+			Artist:         "Artist 3",
+			CollectionName: "Album 3",
+			Cover:          "https://example.com",
+			TrackID:        1,
+			ArtistID:       2,
+			CollectionID:   3,
+			DurationMillis: 4,
+			PreviewURL:     "https://example.com",
+			TrackURL:       "https://example.com",
+		},
 	}
 
 	tests := []struct {
@@ -73,6 +106,7 @@ func TestBrowserRepository_SearchSong(t *testing.T) {
 			}))
 			defer srv.Close()
 
+			//nolint:exhaustruct
 			br := &BrowserRepository{baseURL: srv.URL}
 			got, err := br.SearchSong(tt.args.ctx, tt.args.query)
 			if tt.wantErr {

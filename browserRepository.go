@@ -19,7 +19,8 @@ type BrowserRepository struct {
 
 func NewBrowserRepository(fs afero.Fs) *BrowserRepository {
 	return &BrowserRepository{
-		baseURL:    "https://itunes.apple.com",
+		baseURL: "https://itunes.apple.com",
+		//nolint:exhaustruct
 		httpClient: &http.Client{Timeout: 10 * time.Second},
 		Fs:         fs,
 	}
@@ -46,6 +47,7 @@ type searchResponse struct {
 }
 
 func (br *BrowserRepository) SearchSong(ctx context.Context, query string) ([]Song, error) {
+	//nolint:exhaustruct
 	httpClient := &http.Client{Timeout: 10 * time.Second}
 
 	term := strings.ReplaceAll(query, " ", "+")

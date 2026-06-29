@@ -84,8 +84,10 @@ func Test_createPlaylist(t *testing.T) {
 		readOnly bool
 	}{
 		{
-			name:   "create playlist",
-			plName: "testplaylist",
+			name:     "create playlist",
+			plName:   "testplaylist",
+			wantErr:  false,
+			readOnly: false,
 		},
 		{
 			name:     "create playlist directory fails (read-only filesystem)",
@@ -96,7 +98,7 @@ func Test_createPlaylist(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var fs afero.Fs = afero.NewMemMapFs()
+			fs := afero.NewMemMapFs()
 			if tt.readOnly {
 				fs = afero.NewReadOnlyFs(fs)
 			}
@@ -252,8 +254,11 @@ func TestPlaylistRepository_AddSongToPlaylist(t *testing.T) {
 			},
 		},
 		{
-			name:         "write failure during AddSongToPlaylist",
-			Fs:           &errorFs{Fs: afero.NewMemMapFs()},
+			name: "write failure during AddSongToPlaylist",
+			Fs: &errorFs{
+				Fs:         afero.NewMemMapFs(),
+				shouldFail: false,
+			},
 			song:         songA,
 			playlistName: "writeFailurePlaylist",
 			wantErr:      true,

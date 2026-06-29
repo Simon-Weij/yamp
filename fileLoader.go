@@ -12,6 +12,7 @@ type FileLoader struct {
 }
 
 func NewFileLoader(allowedDirectories []string) *FileLoader {
+	//nolint:exhaustruct
 	return &FileLoader{
 		allowedDirectories: allowedDirectories,
 	}
