@@ -1,13 +1,14 @@
-generate-build-assets:
-	wails3 generate build-assets --binaryname yamp --dir build
+generate:
+	wails3 generate build-assets --binaryname yamp --dir build --typescript
+	wails3 generate bindings --ts
 
 dev:
-	just generate-build-assets
+	just generate
 	just frontend-install
 	wails3 dev
 
 build:
-	just generate-build-assets
+	just generate
 	wails3 build
 
 test:
@@ -35,7 +36,7 @@ frontend-check:
 frontend-dev:
 	cd frontend && pnpm dev
 
-ci: generate-build-assets frontend-install frontend-check test format-check tidy-check lint 
+ci: generate frontend-install frontend-check test format-check tidy-check lint 
 
 check: format-check tidy-check lint frontend-check
 
