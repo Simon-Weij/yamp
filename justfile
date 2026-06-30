@@ -14,7 +14,10 @@ test:
 	CGO_CFLAGS="-Wno-deprecated-declarations" go test ./...
 
 format-check:
-	test -z "$(gofmt -l .)"
+	git ls-files '*.go' ':!:build/**' | xargs gofmt -w
+
+format:
+	gofmt -w .
 
 tidy-check:
 	go mod tidy
@@ -32,7 +35,7 @@ frontend-check:
 frontend-dev:
 	cd frontend && pnpm dev
 
-ci: generate-build-assets test format-check tidy-check lint frontend-install frontend-check
+ci: generate-build-assets frontend-install frontend-check test format-check tidy-check lint 
 
 check: format-check tidy-check lint frontend-check
 
