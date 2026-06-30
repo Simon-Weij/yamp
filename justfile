@@ -9,6 +9,7 @@ dev:
 
 build:
 	just generate
+	cd frontend && pnpm install && pnpm build
 	wails3 build
 
 test:
@@ -36,7 +37,11 @@ frontend-check:
 frontend-dev:
 	cd frontend && pnpm dev
 
-ci: generate frontend-install frontend-check test format-check tidy-check lint 
+remove-temp-files:
+	rm -rf build
+	rm -rf frontend/bindings
+
+ci: remove-temp-files generate frontend-install frontend-check test format-check tidy-check lint 
 
 check: format-check tidy-check lint frontend-check
 
