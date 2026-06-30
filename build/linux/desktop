@@ -1,13 +1,13 @@
 [Desktop Entry]
 Version=1.0
 Name=My Product
-Comment=A yamp application
+Comment=My Product Description
 # The Exec line includes %u to pass the URL to the application
-Exec=/usr/local/bin/yamp %u
+Exec=/usr/local/bin/ %u
 Terminal=false
 Type=Application
-Icon=yamp
+Icon=
 Categories=Utility;
-StartupWMClass=yamp
+StartupWMClass=
 
  

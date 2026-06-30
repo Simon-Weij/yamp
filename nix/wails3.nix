@@ -7,13 +7,13 @@
 }:
 buildGoModule (finalAttrs: {
   pname = "wails3";
-  version = "3.0.0-alpha2.109";
+  version = "3.0.0-alpha2.110";
 
   src = fetchFromGitHub {
     owner = "wailsapp";
     repo = "wails";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-OUZkD56oBHcV1UMYfaqbPVvFCTcR06XZi7alvAT1cIU=";
+    hash = "sha256-FBwHvcTeOnKqaay7I/Orp1yhA7COL7sthrqGCw/kytU=";
   };
 
   vendorHash = "sha256-W6H9mviQdTVPfG+r4M1tNWaVP5JChY5/rLAv8kXG8rI=";
