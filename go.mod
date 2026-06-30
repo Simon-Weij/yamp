@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/adrg/xdg v0.5.3
-	github.com/gen2brain/go-mpv v0.3.1
+	github.com/gen2brain/go-mpv v0.4.0
 	github.com/spf13/afero v1.15.0
 	github.com/stretchr/testify v1.11.1
 	github.com/wailsapp/wails/v3 v3.0.0-alpha2.110
