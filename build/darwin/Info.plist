@@ -6,7 +6,7 @@
         <key>CFBundleName</key>
             <string>My Product</string>
         <key>CFBundleExecutable</key>
-            <string></string>
+            <string>yamp</string>
         <key>CFBundleIdentifier</key>
             <string>com.wails.</string>
         <key>CFBundleVersion</key>

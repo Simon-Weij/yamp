@@ -1,4 +1,5 @@
 name: ci
+
 on:
   push:
     branches:
@@ -10,6 +11,7 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v6
 
@@ -20,23 +22,19 @@ jobs:
       - uses: pnpm/action-setup@v6
         with:
           version: 10
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+            ~/.pnpm-store
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/go.sum', '**/pnpm-lock.yaml') }}
+
       - run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev just mpv
+          sudo apt-get install -y build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev just libmpv-dev
 
       - run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 
-      - run: wails3 build
-      - run: test -z "$(gofmt -l .)"
-      - run: go mod tidy && git diff --exit-code go.mod go.sum
-      - run: go vet ./...
-      - run: just test
-      - run: cd frontend && pnpm install --frozen-lockfile
-      - run: cd frontend && pnpm format:check
-      - run: cd frontend && pnpm check
-      - run: cd frontend && pnpm lint
-
-      - uses: golangci/golangci-lint-action@v9
-        with:
-          version: v2.12
-          args: --timeout=5m
+      - run: just ci
