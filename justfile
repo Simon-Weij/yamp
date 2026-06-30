@@ -37,11 +37,14 @@ frontend-check:
 frontend-dev:
 	cd frontend && pnpm dev
 
-remove-temp-files:
+frontend-build:
+	cd frontend && pnpm build
+
+pre-ci:
 	rm -rf build
 	rm -rf frontend/bindings
 
-ci: remove-temp-files generate frontend-install frontend-check test format-check tidy-check lint 
+ci: pre-ci generate frontend-install frontend-check frontend-build test format-check tidy-check lint 
 
 check: format-check tidy-check lint frontend-check
 
@@ -49,3 +52,4 @@ all: ci build
 
 vet:
 	go vet ./...
+
