@@ -15,7 +15,7 @@
   });
 </script>
 
-<!--<svelte:window on:contextmenu={disableContextMenu} />-->
+<svelte:window on:contextmenu={disableContextMenu} />
 <Sidebar.Provider>
   <AppSidebar />
   <main>

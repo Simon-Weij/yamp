@@ -1,9 +1,9 @@
-import { PlaylistItem } from "../bindings/yamp/models"
+import { PlaylistItem } from "../bindings/yamp/models";
 
 export const currentSong = $state<PlaylistItem>({
   Artist: "Unknown",
   Album: "Unknown",
   Title: "Unknown",
   Cover: "https://placehold.co/400x400",
-  Duration: "00:00"
-})
+  Duration: 5000,
+});
