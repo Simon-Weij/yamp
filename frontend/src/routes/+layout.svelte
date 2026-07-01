@@ -1,31 +1,25 @@
 <script lang="ts">
   let { children } = $props();
   import "../app.css";
-  import { onMount } from "svelte";
-  import { Theme } from "../../bindings/yamp/themeservice";
 
-  import Navbar from "./components/Navbar.svelte";
-  import Musicbar from "./components/Musicbar.svelte";
-
+  import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+  import AppSidebar from "$lib/components/app-sidebar.svelte";
   function disableContextMenu(e: MouseEvent) {
     e.preventDefault();
   }
 
-  onMount(async () => {
-    const theme = await Theme();
-    document.documentElement.classList.remove("dark", "light");
-    document.documentElement.classList.add(theme);
+  import { onMount } from "svelte";
+
+  onMount(() => {
+    document.documentElement.classList.add("dark");
   });
 </script>
 
-<svelte:window on:contextmenu={disableContextMenu} />
-<main class="flex flex-col h-screen font-inter bg-bg text-text overflow-hidden">
-  <div class="flex flex-1 overflow-hidden">
-    <Navbar />
-    <div class="flex-1 overflow-y-auto">
-      {@render children()}
-    </div>
-  </div>
-
-  <Musicbar />
-</main>
+<!--<svelte:window on:contextmenu={disableContextMenu} />-->
+<Sidebar.Provider>
+  <AppSidebar />
+  <main>
+    <Sidebar.Trigger />
+    {@render children?.()}
+  </main>
+</Sidebar.Provider>>

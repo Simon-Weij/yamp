@@ -22,7 +22,7 @@ type PlaylistItem struct {
 	Album    string
 	Title    string
 	Cover    string
-	Duration string
+	Duration int
 }
 
 func NewPlaylistRepository(fs afero.Fs) *PlaylistRepository {
@@ -156,10 +156,11 @@ func (pr *PlaylistRepository) ListSongsInPlaylist(playlistName string) ([]Playli
 	var playlistItems []PlaylistItem
 	for _, song := range songs {
 		playlistItems = append(playlistItems, PlaylistItem{
-			Artist: song.Artist,
-			Album:  song.CollectionName,
-			Title:  song.TrackName,
-			Cover:  song.Cover,
+			Artist:   song.Artist,
+			Album:    song.CollectionName,
+			Title:    song.TrackName,
+			Cover:    song.Cover,
+			Duration: song.DurationMillis,
 		})
 	}
 	return playlistItems, nil

@@ -43,7 +43,6 @@ func main() {
 		Name:        "yamp",
 		Description: "A demo of using raw HTML & CSS",
 		Services: []application.Service{
-			application.NewService(NewThemeService(fs)),
 			application.NewService(NewPlaylistRepository(fs)),
 			application.NewService(NewBrowserRepository(fs)),
 		},
