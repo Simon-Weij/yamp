@@ -5,6 +5,7 @@
   import { Theme } from "../../bindings/yamp/themeservice";
 
   import Navbar from "./components/Navbar.svelte";
+  import Musicbar from "./components/Musicbar.svelte";
 
   function disableContextMenu(e: MouseEvent) {
     e.preventDefault();
@@ -18,9 +19,13 @@
 </script>
 
 <svelte:window on:contextmenu={disableContextMenu} />
-<main class="flex h-screen font-inter bg-bg text-text overflow-hidden">
-  <Navbar />
-  <div class="flex-1 h-full overflow-y-auto">
-    {@render children()}
+<main class="flex flex-col h-screen font-inter bg-bg text-text overflow-hidden">
+  <div class="flex flex-1 overflow-hidden">
+    <Navbar />
+    <div class="flex-1 overflow-y-auto">
+      {@render children()}
+    </div>
   </div>
+
+  <Musicbar />
 </main>

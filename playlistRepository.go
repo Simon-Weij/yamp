@@ -18,10 +18,11 @@ type PlaylistRepository struct {
 }
 
 type PlaylistItem struct {
-	Artist string
-	Album  string
-	Title  string
-	Cover  string
+	Artist   string
+	Album    string
+	Title    string
+	Cover    string
+	Duration string
 }
 
 func NewPlaylistRepository(fs afero.Fs) *PlaylistRepository {

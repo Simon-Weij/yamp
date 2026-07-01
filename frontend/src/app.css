@@ -14,6 +14,7 @@ body {
   --color-nav-bg: #1a1a1a;
   --color-nav-text: #f5f5f5;
   --color-button-nav-hover: #2e2e2e;
+  --color-musicbar: #000000;
 
   --color-modal-bg: #1f1f1f;
   --color-modal-overlay: rgb(0 0 0 / 60%);
@@ -25,6 +26,8 @@ body {
   --color-nav-bg: #d8d8d8;
   --color-nav-text: #2b2b2b;
   --color-button-nav-hover: #c8c8c8;
+  --color-musicbar: #ffffff;
+
 
   --color-modal-bg: #ffffff;
   --color-modal-overlay: rgb(0 0 0 / 40%);
