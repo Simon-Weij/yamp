@@ -148,6 +148,21 @@ func (pr *PlaylistRepository) RemoveSongFromPlaylist(title, artist, playlistName
 	return afero.WriteFile(pr.Fs, path, out, 0o644)
 }
 
+func (pr *PlaylistRepository) RemovePlaylist(playlistName string) error {
+	path := getPlaylistPath(playlistName)
+
+	err := os.Remove(path)
+	if err == nil {
+		return nil
+	}
+
+	if os.IsNotExist(err) {
+		return fmt.Errorf("playlist does not exist: %s", playlistName)
+	}
+
+	return err
+}
+
 func (pr *PlaylistRepository) ListSongsInPlaylist(playlistName string) ([]PlaylistItem, error) {
 	songs, err := pr.getSongsInPlaylist(playlistName)
 	if err != nil {

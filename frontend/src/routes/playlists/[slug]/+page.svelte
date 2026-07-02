@@ -1,6 +1,5 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { onMount } from "svelte";
   import { PlaylistItem, Song } from "../../../../bindings/yamp/models";
   import {
     ListSongsInPlaylist,
@@ -46,8 +45,10 @@
     return () => clearTimeout(id);
   });
 
-  onMount(async () => {
-    songs = await ListSongsInPlaylist(playlist ?? "");
+  $effect(() => {
+    ListSongsInPlaylist(playlist ?? "").then((res) => {
+      songs = res;
+    });
   });
 </script>
 
