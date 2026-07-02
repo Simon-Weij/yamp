@@ -61,6 +61,7 @@
       <Table.Header>
         <Table.Row>
           <Table.Head class="w-15 text-xs text-gray-500">#</Table.Head>
+          <Table.Head class="w-15 text-xs text-gray-500">cover</Table.Head>
           <Table.Head class="text-xs text-gray-500">Song</Table.Head>
           <Table.Head class="w-15 text-xs text-gray-500">Duration</Table.Head>
           <Table.Head />
@@ -71,6 +72,9 @@
         {#each songs as song, i (song)}
           <Table.Row>
             <Table.Cell>{i + 1}</Table.Cell>
+            <Table.Cell>
+              <img src={song.Cover} alt={song.Album} class="rounded" />
+            </Table.Cell>
             <Table.Cell>
               <div class="flex flex-col">
                 {song.Title}
