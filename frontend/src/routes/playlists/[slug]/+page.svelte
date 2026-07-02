@@ -4,6 +4,7 @@
   import {
     ListSongsInPlaylist,
     AddSongToPlaylist,
+    RemoveSongFromPlaylist,
   } from "../../../../bindings/yamp/playlistrepository";
   import { SearchSong } from "../../../../bindings/yamp/browserrepository";
   import * as Table from "$lib/components/ui/table/index.js";
@@ -11,6 +12,8 @@
   import Button from "$lib/components/ui/button/button.svelte";
   import { Plus } from "@lucide/svelte";
   import Input from "$lib/components/ui/input/input.svelte";
+  import * as ContextMenu from "$lib/components/ui/context-menu/index.js";
+  import Trash_2 from "@lucide/svelte/icons/trash-2";
 
   let searchSongs: Song[] = $state([]);
   let open = $state(false);
@@ -45,6 +48,11 @@
     return () => clearTimeout(id);
   });
 
+  async function removeSongFromPlaylist(title: string, artist: string) {
+    await RemoveSongFromPlaylist(title, artist, playlist ?? "");
+    songs = await ListSongsInPlaylist(playlist ?? "");
+  }
+
   $effect(() => {
     ListSongsInPlaylist(playlist ?? "").then((res) => {
       songs = res;
@@ -56,7 +64,11 @@
   <main class="w-full flex flex-col justify-center">
     <h1 class="font-bold text-3xl text-center mt-5">{playlist}</h1>
     <Dialog.Trigger>
-      <Button class="mx-auto my-5 cursor-pointer"><Plus /> Add Song</Button>
+      {#snippet child({ props })}
+        <Button {...props} class="mx-auto my-5 cursor-pointer"
+          ><Plus /> Add Song</Button
+        >
+      {/snippet}
     </Dialog.Trigger>
     <Table.Root class="w-full">
       <Table.Header>
@@ -71,35 +83,47 @@
       </Table.Header>
       <Table.Body class="cursor-pointer">
         {#each songs as song, i (song)}
-          <Table.Row>
-            <Table.Cell>{i + 1}</Table.Cell>
-            <Table.Cell>
-              <img src={song.Cover} alt={song.Album} class="rounded" />
-            </Table.Cell>
-            <Table.Cell>
-              <div class="flex flex-col">
-                {song.Title}
-                <div>
-                  <span class="text-gray-400">{song.Artist} - {song.Album}</span
+          <ContextMenu.Root>
+            <ContextMenu.Trigger>
+              {#snippet child({ props })}
+                <Table.Row {...props}>
+                  <Table.Cell>{i + 1}</Table.Cell>
+                  <Table.Cell>
+                    <img src={song.Cover} alt={song.Album} class="rounded" />
+                  </Table.Cell>
+                  <Table.Cell>
+                    <div class="flex flex-col">
+                      {song.Title}
+                      <div>
+                        <span class="text-gray-400"
+                          >{song.Artist} - {song.Album}</span
+                        >
+                      </div>
+                    </div></Table.Cell
                   >
-                </div>
-              </div></Table.Cell
-            >
-            <Table.Cell>{msToMinutesSeconds(song.Duration)}</Table.Cell>
-            <Table.Cell />
-            <Table.Cell />
-          </Table.Row>
+                  <Table.Cell>{msToMinutesSeconds(song.Duration)}</Table.Cell>
+                  <Table.Cell />
+                  <Table.Cell />
+                </Table.Row>
+              {/snippet}
+            </ContextMenu.Trigger>
+            <ContextMenu.Content>
+              <ContextMenu.Item
+                class="cursor-pointer"
+                onclick={() => removeSongFromPlaylist(song.Title, song.Artist)}
+              >
+                <Trash_2 /> Remove from playlist
+              </ContextMenu.Item>
+            </ContextMenu.Content>
+          </ContextMenu.Root>
         {/each}
       </Table.Body>
     </Table.Root>
   </main>
-
   <Dialog.Content class="sm:max-w-2xl max-h-[80vh] flex flex-col">
     <Dialog.Header>
       <Dialog.Title>Add song</Dialog.Title>
-
       <Input placeholder="Search..." bind:value={searchSongPrompt} />
-
       <div class="max-h-96 overflow-y-auto">
         <Table.Root class="w-full">
           <Table.Header class="sticky top-0">
@@ -113,7 +137,6 @@
               <Table.Head />
             </Table.Row>
           </Table.Header>
-
           <Table.Body class="cursor-pointer">
             {#each searchSongs as song (song)}
               <Table.Row
@@ -124,7 +147,6 @@
                 <Table.Cell>
                   <img src={song.artworkUrl100} alt={song.collectionName} />
                 </Table.Cell>
-
                 <Table.Cell>
                   <div class="flex flex-col">
                     {song.trackName}
@@ -135,11 +157,9 @@
                     </div>
                   </div>
                 </Table.Cell>
-
                 <Table.Cell>
                   {msToMinutesSeconds(song.trackTimeMillis)}
                 </Table.Cell>
-
                 <Table.Cell />
                 <Table.Cell />
               </Table.Row>
