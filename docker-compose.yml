@@ -1,0 +1,32 @@
+services:
+  app:
+    build: .
+    pull_policy: build
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: .
+
+  postgres:
+    image: postgres:18.4-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dbname}
+      POSTGRES_USER: ${POSTGRES_USERNAME:-username}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB:-dbname}"]
+      interval: 2s
+      timeout: 1s
+      retries: 20
+
+volumes:
+  postgres_data:
