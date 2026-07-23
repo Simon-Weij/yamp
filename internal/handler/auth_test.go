@@ -18,7 +18,18 @@ func (f mockedUserCreator) CreateUser(
 	arg sqlc.CreateUserParams,
 ) (sqlc.User, error) {
 	return sqlc.User{
-		Username: arg.Username,
+		Username:     arg.Username,
+		PasswordHash: "aaaaa",
+	}, nil
+}
+
+func (f mockedUserCreator) GetUserForLogin(
+	ctx context.Context,
+	username string,
+) (sqlc.GetUserForLoginRow, error) {
+	return sqlc.GetUserForLoginRow{
+		ID:           5,
+		PasswordHash: "AAAAA",
 	}, nil
 }
 
@@ -69,12 +80,12 @@ func Test_HandleSignup(t *testing.T) {
 			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
-			name:               "username too logn",
+			name:               "username too long",
 			json:               `{"username":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","password":"password"}`,
 			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
-			name:               "passwordj too logn",
+			name:               "password too long",
 			json:               `{"username":"username","password":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}`,
 			expectedStatusCode: http.StatusBadRequest,
 		},

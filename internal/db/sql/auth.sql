@@ -5,3 +5,6 @@ INSERT INTO users (
     $1, $2
 )
 RETURNING *;
+
+-- name: GetUserForLogin :one
+SELECT id, password_hash FROM users WHERE username = $1;
