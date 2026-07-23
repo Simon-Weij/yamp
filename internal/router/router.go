@@ -7,12 +7,20 @@ import (
 	"github.com/Simon-Weij/yamp/internal/middleware"
 )
 
-func New(healtHandler handler.HealthHandler) *http.ServeMux {
+func New(healtHandler handler.HealthHandler, authHandler handler.AuthHandler) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.Handle(
 		"GET /health",
 		middleware.New(middleware.WithLogging).Then(http.HandlerFunc(healtHandler.GetHealth)),
+	)
+
+	mux.Handle(
+		"POST /auth/signup",
+		middleware.New(
+			middleware.WithLogging,
+			middleware.WithTimeout,
+		).Then(http.HandlerFunc(authHandler.HandleSignup)),
 	)
 
 	return mux

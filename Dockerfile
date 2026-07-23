@@ -1,5 +1,7 @@
 FROM golang:1.26.4-alpine3.23 AS build
 
+COPY --from=sqlc/sqlc /workspace/sqlc /usr/bin/sqlc 
+
 WORKDIR /app
 
 ENV CGO_ENABLED=0
@@ -8,6 +10,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
+
+RUN sqlc generate
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \

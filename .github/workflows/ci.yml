@@ -1,53 +1,60 @@
 name: ci
-
 on:
-  push:
-  pull_request:
-
+  push: null
+  pull_request: null
 jobs:
   linter:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      - run: sqlc generate
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
           version: v2.12
-
   tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      - run: sqlc generate
       - run: go test ./...
-
   modtidy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
       - uses: actions/setup-go@v6
         with:
-          go-version-file: "go.mod"
-
+          go-version-file: go.mod
+      - run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      - run: sqlc generate
       - run: go mod tidy && git diff --exit-code go.mod go.sum
-
   format-go:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
       - uses: actions/setup-go@v6
         with:
-          go-version-file: "go.mod"
-
-      - run: test -z "$(gofmt -l .)"
+          go-version-file: go.mod
+      - run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      - run: go install mvdan.cc/gofumpt@latest
+      - run: sqlc generate
+      - run: test -z "$(gofumpt -l .)"
 
   govet:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      - run: sqlc generate
       - run: go vet ./...
-
