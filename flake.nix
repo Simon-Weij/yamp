@@ -15,6 +15,7 @@
           httpie
           goose
           sqlc
+          just
         ];
       };
     });

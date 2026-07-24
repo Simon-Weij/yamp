@@ -52,6 +52,16 @@ func (f mockedUserCreator) GetUserForLogin(
 	}, nil
 }
 
+func (f mockedUserCreator) GetUserByID(
+	ctx context.Context,
+	id int64,
+) (sqlc.GetUserByIDRow, error) {
+	return sqlc.GetUserByIDRow{
+		ID:       id,
+		Username: "testuser",
+	}, nil
+}
+
 type tokenStore struct {
 	byHash  map[string]sqlc.RefreshToken
 	revoked map[int64]bool
@@ -113,7 +123,7 @@ func Test_HandleSignup(t *testing.T) {
 		{
 			name:               "runs correctly",
 			json:               `{"username":"testuser","password":"password"}`,
-			expectedStatusCode: http.StatusOK,
+			expectedStatusCode: http.StatusCreated,
 		},
 		{
 			name:               "empty username",

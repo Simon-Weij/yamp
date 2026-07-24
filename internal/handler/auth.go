@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/Simon-Weij/yamp/internal/db/sqlc"
+	"github.com/Simon-Weij/yamp/internal/middleware"
 	"github.com/alexedwards/argon2id"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
@@ -51,6 +52,7 @@ func NewAuthHandler(
 type UserRepository interface {
 	CreateUser(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error)
 	GetUserForLogin(ctx context.Context, username string) (sqlc.GetUserForLoginRow, error)
+	GetUserByID(ctx context.Context, id int64) (sqlc.GetUserByIDRow, error)
 }
 
 type RefreshTokenRepository interface {
@@ -99,6 +101,8 @@ func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("user already exists %s", req.Username), http.StatusConflict)
 		return
 	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
@@ -117,6 +121,7 @@ func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	passwordMatches, err := argon2id.ComparePasswordAndHash(req.Password, user.PasswordHash)
 	if err != nil {
 		http.Error(w, "could not compare passwords: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 	if !passwordMatches {
 		http.Error(w, "password does not match!", http.StatusUnauthorized)
@@ -208,6 +213,22 @@ func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 
 	setRefreshTokenCookie(w, "", true)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *AuthHandler) HandleMe(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDContextKey).(float64)
+
+	user, err := h.UserRepository.GetUserByID(r.Context(), int64(userID))
+	if err != nil {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"id":       user.ID,
+		"username": user.Username,
+	})
 }
 
 func (h *AuthHandler) issueRefreshToken(w http.ResponseWriter, r *http.Request, userID int64) error {

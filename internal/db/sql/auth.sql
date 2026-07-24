@@ -9,6 +9,9 @@ RETURNING *;
 -- name: GetUserForLogin :one
 SELECT id, password_hash FROM users WHERE username = $1;
 
+-- name: GetUserByID :one
+SELECT id, username, created_at, updated_at FROM users WHERE id = $1;
+
 -- name: CreateRefreshToken :one
 INSERT INTO refresh_tokens (
     user_id, token_hash, expires_at

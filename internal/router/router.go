@@ -47,5 +47,14 @@ func New(
 		).Then(http.HandlerFunc(authHandler.HandleLogout)),
 	)
 
+	mux.Handle(
+		"GET /auth/me",
+		middleware.New(
+			middleware.WithLogging,
+			middleware.WithTimeout,
+			middleware.WithAuth,
+		).Then(http.HandlerFunc(authHandler.HandleMe)),
+	)
+
 	return mux
 }
