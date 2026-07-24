@@ -32,6 +32,20 @@ func New(
 			middleware.WithTimeout,
 		).Then(http.HandlerFunc(authHandler.HandleLogin)),
 	)
+	mux.Handle(
+		"POST /auth/refresh",
+		middleware.New(
+			middleware.WithLogging,
+			middleware.WithTimeout,
+		).Then(http.HandlerFunc(authHandler.HandleRefresh)),
+	)
+	mux.Handle(
+		"POST /auth/logout",
+		middleware.New(
+			middleware.WithLogging,
+			middleware.WithTimeout,
+		).Then(http.HandlerFunc(authHandler.HandleLogout)),
+	)
 
 	return mux
 }

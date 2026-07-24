@@ -73,7 +73,7 @@ func main() {
 	queries := sqlc.New(pool)
 
 	healthHandler := handler.NewHealthHandler()
-	authHandler := handler.NewAuthHandler(queries)
+	authHandler := handler.NewAuthHandler(queries, queries)
 
 	mux := router.New(*healthHandler, *authHandler)
 
